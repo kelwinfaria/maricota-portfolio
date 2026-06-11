@@ -81,5 +81,5 @@ insert into storage.buckets (id, name, public) values ('maricota', 'maricota', t
 on conflict (id) do nothing;
 
 create policy "public read storage" on storage.objects for select using (bucket_id = 'maricota');
-create policy "service upload storage" on storage.objects for insert using (bucket_id = 'maricota' and auth.role() = 'service_role');
+create policy "service upload storage" on storage.objects for insert with check (bucket_id = 'maricota' and auth.role() = 'service_role');
 create policy "service delete storage" on storage.objects for delete using (bucket_id = 'maricota' and auth.role() = 'service_role');
