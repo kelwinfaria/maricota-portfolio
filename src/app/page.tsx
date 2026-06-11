@@ -154,7 +154,7 @@ em{font-style:italic;font-weight:500;color:var(--olive)}
 .wrap{max-width:var(--mw);margin:0 auto;padding:0 clamp(20px,5vw,40px)}
 nav{position:fixed;top:0;left:0;right:0;z-index:600;display:flex;align-items:center;justify-content:space-between;padding:12px clamp(18px,5vw,40px);padding-top:max(12px,env(safe-area-inset-top));background:rgba(252,251,248,.76);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid transparent;transition:border-color .4s,background .4s}
 nav.sc{border-bottom-color:var(--line);background:rgba(252,251,248,.95)}
-.nav-logo{height:28px;mix-blend-mode:multiply}
+.nav-logo{height:28px}
 .nav-links{display:flex;gap:28px}
 .nav-links a{font-size:.74rem;letter-spacing:.1em;text-transform:uppercase;font-weight:500;color:var(--inkm);text-decoration:none;padding:4px 0;position:relative;transition:color .3s}
 .nav-links a::after{content:'';position:absolute;left:0;right:100%;bottom:0;height:1.5px;background:var(--sage);border-radius:2px;transition:right .35s var(--ez)}
@@ -173,7 +173,7 @@ nav.sc{border-bottom-color:var(--line);background:rgba(252,251,248,.95)}
 .mmenu a:hover{color:var(--olive)}
 .hero{padding:110px 0 64px;overflow:hidden;background:var(--bg)}
 .hero-g{display:grid;grid-template-columns:1.08fr .92fr;gap:clamp(36px,6vw,80px);align-items:center}
-.hero-logo{height:clamp(54px,8vw,90px);mix-blend-mode:multiply;margin-bottom:18px}
+.hero-logo{height:clamp(54px,8vw,90px);margin-bottom:18px}
 .htag{font-size:clamp(2.2rem,4.8vw,3.5rem);margin-bottom:16px;line-height:1.05;letter-spacing:-.015em}
 .htag .it{display:block;font-style:italic;font-weight:500;color:var(--olive)}
 .hlead{font-size:1.02rem;color:var(--inkm);max-width:27rem;margin-bottom:26px;line-height:1.66}
@@ -346,7 +346,7 @@ footer{background:var(--ink);color:#fff;padding:56px 0 calc(30px + env(safe-area
   .hero{padding:96px 0 46px}
   .hero-g{grid-template-columns:1fr;gap:38px;text-align:center}
   .hero-logo{margin-inline:auto}.hlead{margin-inline:auto}.hctas{justify-content:center}
-  .cwrap{max-width:320px;margin:0 auto}
+  .cwrap{max-width:min(480px,calc(100vw - 32px));margin:0 auto}
   .sobre-g{grid-template-columns:1fr;gap:38px}
   .sobre-ph{max-width:340px;justify-self:center}
   .cc-grid{grid-template-columns:1fr;grid-template-rows:auto;max-height:none}
