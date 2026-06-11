@@ -343,6 +343,7 @@ footer{background:var(--ink);color:#fff;padding:56px 0 calc(30px + env(safe-area
 .rv.vis{opacity:1;transform:none}
 @media(max-width:900px){
   .nav-links{display:none}.burger{display:flex}
+  .rv{opacity:1;transform:none}
   .hero{padding:96px 0 46px}
   .hero-g{grid-template-columns:1fr;gap:38px;text-align:center}
   .hero-logo{margin-inline:auto}.hlead{margin-inline:auto}.hctas{justify-content:center}
