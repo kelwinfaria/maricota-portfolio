@@ -490,7 +490,6 @@ addEventListener('keydown',e=>{if(e.key==='Escape')closeLB()});`
             <div className="sstat"><b>100%</b><span>Feito à mão</span></div>
           </div>
           <div className="sobre-cp rv">
-            <span className="ey">Quem está por trás da Maricota</span>
             <h2 className="stitle">Olá, eu sou <em>Aladiane</em></h2>
             <p className="ssub">Artesã, criadora e fundadora</p>
             <p>A Maricota nasceu em 2024 de um desejo simples: criar peças que fossem além de brinquedos. Cada bichinho que sai das minhas mãos carrega uma intenção de acolher, de durar e de virar memória.</p>
@@ -507,22 +506,12 @@ addEventListener('keydown',e=>{if(e.key==='Escape')closeLB()});`
 
       <section id="colecoes" style={{ padding: 'clamp(70px,9vw,100px) 0' }}>
         <div className="wrap">
-          <div className="sh rv">
-            <span className="ey">Para cada momento</span>
-            <h2>Nossas <em>Coleções</em></h2>
-            <p className="sub">Explore as categorias e encontre a peça perfeita</p>
-          </div>
           <div className="cc-grid rv" dangerouslySetInnerHTML={{ __html: especialCards }} />
         </div>
       </section>
 
       <section className="produtos" id="produtos">
         <div className="wrap">
-          <div className="sh rv">
-            <span className="ey">Novos produtos</span>
-            <h2>Nossos <em>Produtos</em></h2>
-            <p className="sub">Cada personagem tem personalidade própria. Cerca de 33cm de puro carinho.</p>
-          </div>
           <div className="filters rv" id="filters" dangerouslySetInnerHTML={{ __html: filterButtons }} />
           <div className="grid" id="grid" dangerouslySetInnerHTML={{ __html: productCards }} />
           <p className="cnote rv">As <b>roupinhas</b> têm troca de cor sob encomenda. Cada <b>porta maternidade</b> é personalizada com o nome e o bichinho do bebê.</p>
@@ -554,7 +543,6 @@ addEventListener('keydown',e=>{if(e.key==='Escape')closeLB()});`
 
       <section className="encomendar" id="encomendar">
         <div className="wrap">
-          <div className="sh rv"><span className="ey">Como encomendar</span><h2>Tudo que você <em>precisa saber</em></h2></div>
           <div className="pcards rv">
             <div className="pcard"><span className="pi">✎</span><h3>Feito por encomenda</h3><p>Cada peça é produzida com dedicação após o pedido. Consulte o prazo de produção disponível.</p><span className="ptag">Prazo sob consulta</span></div>
             <div className="pcard"><span className="pi">✈</span><h3>Frete para todo o Brasil</h3><p>Enviamos com todo carinho para qualquer canto do país. O amor da Maricota chega até você.</p><span className="ptag">Todo o Brasil</span></div>
