@@ -198,9 +198,9 @@ nav.sc{border-bottom-color:var(--line);background:rgba(252,251,248,.95)}
 .marq{display:flex;width:max-content;animation:marq 32s linear infinite;align-items:center;gap:10px;padding:16px 10px}
 @keyframes marq{to{transform:translateX(-50%)}}
 .strip:hover .marq{animation-play-state:paused}
-.spill{display:flex;align-items:center;gap:9px;background:#FCFBF8;border:1px solid rgba(58,56,47,.11);border-radius:100px;padding:11px 18px;font-size:.8rem;color:#686560;min-height:44px;flex:none;margin-right:10px}
-.spill .si{width:24px;height:24px;border-radius:50%;background:#E8EDE1;color:#8A9A7E;display:grid;place-items:center;font-size:.78rem;flex:none}
-.spill b{color:#3A382F;font-weight:600}
+.spill{display:flex;align-items:center;gap:9px;background:var(--olive);border-radius:100px;padding:11px 18px;font-size:.8rem;color:#fff;min-height:44px;flex:none;margin-right:10px}
+.spill .si{width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,.2);color:#fff;display:grid;place-items:center;font-size:.78rem;flex:none}
+.spill b{color:#fff;font-weight:700}
 .sh{text-align:center;max-width:620px;margin:0 auto 40px}
 .sh .ey{display:inline-flex;align-items:center;gap:10px;margin-bottom:12px}
 .sh .ey::before,.sh .ey::after{content:'';width:22px;height:1px;background:var(--sage);opacity:.6}
