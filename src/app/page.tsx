@@ -269,12 +269,12 @@ nav.sc{border-bottom-color:var(--line);background:rgba(252,251,248,.95)}
 .ctag2.hot{background:var(--olive);color:#fff;box-shadow:none}
 .czoom{position:absolute;top:10px;right:10px;z-index:2;width:31px;height:31px;border-radius:50%;background:rgba(252,251,248,.94);display:grid;place-items:center;color:var(--ink);opacity:0;transform:scale(.8);transition:all .32s var(--ez)}
 .card:hover .czoom{opacity:1;transform:scale(1)}
-.card-bod{padding:14px 16px 18px}
+.card-bod{padding:14px 16px 18px;text-align:center}
 .card-name{font-family:'Cormorant Garamond',serif;font-size:1.26rem;font-weight:600;line-height:1.1}
 .card.feat .card-name{font-size:1.55rem}
 
 .card-det{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:.96rem;color:var(--inks);margin-top:2px}
-.card-ft{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px}
+.card-ft{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:12px}
 .card-price{font-size:.84rem;font-weight:600;color:var(--olive);white-space:nowrap}
 .card-more{font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;color:var(--inks);white-space:nowrap}
 .card-multi{position:absolute;bottom:10px;right:10px;z-index:2;display:flex;gap:4px}
@@ -396,9 +396,11 @@ const cslides=[...ctrack.children];let ci=0,ct=null;
 function goC(n){ci=(n+cslides.length)%cslides.length;ctrack.style.transform='translateX(-'+ci*100+'%)';[...cdots.children].forEach((d,i)=>d.classList.toggle('on',i===ci))}
 cslides.forEach((_,i)=>{const d=document.createElement('button');d.className='cdot'+(i===0?' on':'');d.setAttribute('aria-label','Slide '+(i+1));d.addEventListener('click',()=>{clearInterval(ct);goC(i);ct=setInterval(()=>goC(ci+1),4200)});cdots.appendChild(d)});
 ct=setInterval(()=>goC(ci+1),4200);
-let tx=0;
-ctrack.addEventListener('touchstart',e=>tx=e.touches[0].clientX,{passive:true});
-ctrack.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-tx;if(Math.abs(dx)>40){clearInterval(ct);goC(ci+(dx>0?-1:1));ct=setInterval(()=>goC(ci+1),4200)}},{passive:true});
+let tx=0,ty=0,hSwipe=false;
+const cframe=document.getElementById('cframe');
+cframe.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY;hSwipe=false},{passive:true});
+cframe.addEventListener('touchmove',e=>{const dx=Math.abs(e.touches[0].clientX-tx),dy=Math.abs(e.touches[0].clientY-ty);if(!hSwipe&&(dx>5||dy>5))hSwipe=dx>dy;if(hSwipe)e.preventDefault()},{passive:false});
+cframe.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-tx;if(Math.abs(dx)>40){clearInterval(ct);goC(ci+(dx>0?-1:1));ct=setInterval(()=>goC(ci+1),4200)}},{passive:true});
 const cards=[...document.querySelectorAll('.card')];
 function goFilter(f){
   document.querySelectorAll('.filter').forEach(x=>x.classList.toggle('on',x.dataset.filter===f));
@@ -477,7 +479,7 @@ addEventListener('keydown',e=>{if(e.key==='Escape')closeLB()});`
             </div>
           </div>
           <div className="cwrap rv">
-            <div className="cframe">
+            <div className="cframe" id="cframe">
               <span className="ctag-c"><i></i>Coleção 2026</span>
               <div className="ctrack" id="ctrack" dangerouslySetInnerHTML={{ __html: carouselSlides }} />
             </div>
