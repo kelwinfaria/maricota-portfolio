@@ -25,6 +25,7 @@ async function api(path: string, opts?: RequestInit) {
 
 export default function AdminPage() {
   const [authed, setAuthed] = useState(false)
+  const [authChecking, setAuthChecking] = useState(true)
   const [pw, setPw] = useState('')
   const [pwErr, setPwErr] = useState(false)
   const [page, setPage] = useState('dash')
@@ -59,15 +60,19 @@ export default function AdminPage() {
   }, [])
 
   const load = useCallback(async () => {
-    const [p, c, cr, es, st, tr] = await Promise.all([
-      api('/api/products'), api('/api/categories'),
-      api('/api/carousel'), api('/api/especiais'), api('/api/settings'),
-      api('/api/trash'),
-    ])
-    setProducts(p); setCats(c); setCarousel(cr); setEspeciais(es); setTrash(tr)
-    setSettings({ wa_number: st.wa_number ?? '', admin_name: st.admin_name ?? 'Aladiane' })
-    if (st.appearance) setAppCfg(st.appearance)
-  }, [])
+    try {
+      const [p, c, cr, es, st, tr] = await Promise.all([
+        api('/api/products'), api('/api/categories'),
+        api('/api/carousel'), api('/api/especiais'), api('/api/settings'),
+        api('/api/trash'),
+      ])
+      setProducts(p); setCats(c); setCarousel(cr); setEspeciais(es); setTrash(tr)
+      setSettings({ wa_number: st.wa_number ?? '', admin_name: st.admin_name ?? 'Aladiane' })
+      if (st.appearance) setAppCfg(st.appearance)
+    } catch {
+      showToast('Erro ao carregar dados. Tente novamente.', 'err')
+    }
+  }, [showToast])
 
   const doLogin = async () => {
     try {
@@ -234,8 +239,19 @@ export default function AdminPage() {
 
   useEffect(() => {
     fetch('/api/auth', { method: 'POST', body: JSON.stringify({ action: 'check' }), headers: { 'Content-Type': 'application/json' } })
-      .then(r => { if (r.ok) { setAuthed(true); load() } }).catch(() => {})
+      .then(r => { if (r.ok) { setAuthed(true); load() } })
+      .catch(() => {})
+      .finally(() => setAuthChecking(false))
   }, [load])
+
+  if (authChecking) return (
+    <>
+      <style dangerouslySetInnerHTML={{ __html: adminCSS }} />
+      <div style={{ position: 'fixed', inset: 0, background: 'var(--bg)', display: 'grid', placeItems: 'center' }}>
+        <img src="/images/logo-maricota.png" alt="Maricota" style={{ height: 32, opacity: 0.4, mixBlendMode: 'multiply' }} />
+      </div>
+    </>
+  )
 
   if (!authed) return (
     <>
