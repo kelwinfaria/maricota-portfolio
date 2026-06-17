@@ -109,9 +109,9 @@ export default async function Home() {
 
   const waUrl = wa.startsWith('http') ? wa : `https://wa.me/${wa.replace(/\D/g, '')}`
 
-  const carouselFromSlots = carousel.map(s => carouselSlideHTML(s, products)).join('')
-  const carouselSlides = carouselFromSlots.length > 0
-    ? carouselFromSlots
+  const validCarouselSlides = carousel.map(s => carouselSlideHTML(s, products)).filter(Boolean)
+  const carouselSlides = validCarouselSlides.length > 0
+    ? validCarouselSlides.join('')
     : products.filter(p => p.featured).slice(0, 4).map(p =>
         `<div class="cslide"><img src="${p.images?.[0] ?? ''}" alt="${p.name}"><div class="cgrad"></div><div class="ccap"><div class="cn">${p.name}</div><div class="cd">Bichinho feito à mão</div></div></div>`
       ).join('')
@@ -307,15 +307,15 @@ nav.sc{border-bottom-color:var(--line);background:rgba(252,251,248,.95)}
 .cta-band p{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.08rem;color:rgba(255,255,255,.74);margin-top:5px}
 .btn-wa{position:relative;z-index:1;background:var(--bg);color:var(--olived);font-weight:600;font-size:.88rem;padding:15px 26px;border-radius:100px;text-decoration:none;display:inline-flex;gap:9px;align-items:center;white-space:nowrap;transition:transform .3s var(--ez);box-shadow:0 14px 28px -14px rgba(0,0,0,.4);min-height:50px}
 .btn-wa:hover{transform:translateY(-2px)}
-footer{background:var(--ink);color:#fff;padding:56px 0 calc(30px + env(safe-area-inset-bottom));overflow:hidden;text-align:center}
+footer{background:var(--olive);color:#fff;padding:56px 0 calc(30px + env(safe-area-inset-bottom));overflow:hidden;text-align:center}
 .ft-illo{width:76px;height:52px;margin:0 auto 16px;opacity:.2;color:#fff;display:flex;align-items:center;justify-content:center}
 .ft-illo svg{width:100%;stroke-linecap:round;stroke-linejoin:round}
 .ft-logo{height:34px;margin:0 auto 13px;opacity:.86}
 .ft-tag{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.08rem;color:rgba(255,255,255,.54);margin-bottom:20px}
 .ft-heart{color:var(--sage)}
 .ft-links{display:flex;justify-content:center;gap:10px;margin-bottom:24px;flex-wrap:wrap}
-.ft-links a{display:inline-flex;align-items:center;gap:7px;color:#fff;text-decoration:none;font-size:.78rem;letter-spacing:.03em;border:1px solid rgba(255,255,255,.18);padding:10px 19px;border-radius:100px;transition:all .3s var(--ez);min-height:44px}
-.ft-links a:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.44)}
+.ft-links a{display:inline-flex;align-items:center;gap:7px;color:#fff;text-decoration:none;font-size:.78rem;letter-spacing:.03em;border:1px solid rgba(255,255,255,.35);padding:10px 19px;border-radius:100px;transition:all .3s var(--ez);min-height:44px;background:rgba(255,255,255,.12)}
+.ft-links a:hover{background:rgba(255,255,255,.22);border-color:rgba(255,255,255,.7)}
 .ft-meta{font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.28)}
 .fab{position:fixed;right:18px;bottom:calc(18px + env(safe-area-inset-bottom));z-index:550;display:inline-flex;align-items:center;gap:9px;background:var(--olive);color:#fff;text-decoration:none;padding:14px 18px;border-radius:100px;font-size:.84rem;font-weight:600;box-shadow:0 16px 32px -12px var(--olive);transform:translateY(130px);transition:transform .5s var(--ez),background .3s}
 .fab.show{transform:translateY(0)}
@@ -596,21 +596,17 @@ addEventListener('keydown',e=>{if(e.key==='Escape')closeLB()});`
 
       <footer>
         <div className="wrap">
-          <div className="ft-illo">
-            <svg viewBox="0 0 260 180" fill="none" stroke="currentColor" strokeWidth="1.5">
-              <rect x="22" y="120" width="216" height="28" rx="10"/><path d="M42 120V64Q42 44 62 44L198 44Q218 44 218 64V120"/><path d="M84 44V24Q84 12 98 12L174 12Q188 12 188 24V44"/>
-              <line x1="136" y1="44" x2="136" y2="96"/><path d="M130 92L136 116L142 92"/>
-              <rect x="58" y="70" width="58" height="36" rx="7"/><circle cx="76" cy="88" r="5"/><circle cx="94" cy="88" r="5"/><circle cx="112" cy="88" r="5"/>
-              <circle cx="190" cy="88" r="21"/><circle cx="190" cy="88" r="8"/>
-              <line x1="190" y1="67" x2="190" y2="109" strokeWidth="1"/><line x1="169" y1="88" x2="211" y2="88" strokeWidth="1"/>
-              <ellipse cx="118" cy="20" rx="13" ry="7"/><path d="M118 27Q127 46 131 64Q134 80 136 96" strokeDasharray="3 3"/>
-            </svg>
-          </div>
           <img className="ft-logo" src="/images/logo-maricota.png" alt="Maricota" />
           <p className="ft-tag">Maternidade dos sonhos, feita com amor <span className="ft-heart">♥</span></p>
           <div className="ft-links">
-            <a href={waUrl} target="_blank" rel="noopener">WhatsApp</a>
-            <a href="https://instagram.com/maricota" target="_blank" rel="noopener">@maricota</a>
+            <a href={waUrl} target="_blank" rel="noopener">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1 0 12 2Zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .1-1.7-.1-.4-.1-.9-.3-1.6-.6-2.8-1.2-4.6-4-4.7-4.2-.1-.2-1.1-1.5-1.1-2.8 0-1.3.7-2 .9-2.2.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 1.9c.1.2.1.4 0 .5l-.4.6c-.2.2-.3.4-.1.7.2.3.8 1.3 1.7 2 1.2.9 1.6.9 1.9 1.1.2.1.4.1.5-.1l.6-.8c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.2.1.8-.1 1.4Z"/></svg>
+              WhatsApp
+            </a>
+            <a href="https://instagram.com/maricota" target="_blank" rel="noopener">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+              Instagram
+            </a>
           </div>
           <p className="ft-meta">Feito à mão · Brasil · Desde 2024</p>
         </div>
