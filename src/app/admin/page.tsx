@@ -2,10 +2,11 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 
 /* ─── types ─── */
-interface Product { id: string; name: string; category: string; det: string; price: string; fabric: string; wa: string; featured: boolean; images: string[]; created_at?: string }
+interface Product { id: string; name: string; category: string; det: string; price: string; fabric: string; wa: string; featured: boolean; images: string[]; created_at?: string; deleted_at?: string }
 interface Category { id: string; label: string; color: string; fixed: boolean }
 interface Slot { type: string; ref_id: string; label: string }
 interface AppCfg { brand: string; brandL: string; brandP: string; sec: string; pill: string; accent: string }
+interface ImgItem { src: string; file?: File }
 
 const PRESETS = [
   { name: 'Sage & Olive', brand: '#6B7A58', brandL: '#8A9A75', brandP: '#EAF0E3', sec: '#F3F3EC', pill: '#F7F6F1', accent: '#8A9A7E' },
@@ -38,14 +39,18 @@ export default function AdminPage() {
   const [toast, setToast] = useState<{ msg: string; type: string } | null>(null)
   const [modal, setModal] = useState<{ open: boolean; id: string | null }>({ open: false, id: null })
   const [form, setForm] = useState({ name: '', category: '', det: '', price: '', fabric: '', wa: '', featured: false })
-  const [imgs, setImgs] = useState<string[]>([])
-  const [imgFiles, setImgFiles] = useState<File[]>([])
+  const [imgItems, setImgItems] = useState<ImgItem[]>([])
   const [cfDel, setCfDel] = useState<string | null>(null)
   const [slotMode, setSlotMode] = useState<'carousel' | 'especial' | null>(null)
   const [newCat, setNewCat] = useState('')
   const [sOld, setSOld] = useState(''); const [sNew, setSNew] = useState('')
+  const [trash, setTrash] = useState<Product[]>([])
+  const [renamingCat, setRenamingCat] = useState<string | null>(null)
+  const [renameVal, setRenameVal] = useState('')
+  const [cfPermDel, setCfPermDel] = useState<string | null>(null)
   const toastTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
   const sbRef = useRef<HTMLElement>(null)
+  const dragImgIdx = useRef<number | null>(null)
 
   const showToast = useCallback((msg: string, type = 'ok') => {
     setToast({ msg, type })
@@ -54,11 +59,12 @@ export default function AdminPage() {
   }, [])
 
   const load = useCallback(async () => {
-    const [p, c, cr, es, st] = await Promise.all([
+    const [p, c, cr, es, st, tr] = await Promise.all([
       api('/api/products'), api('/api/categories'),
       api('/api/carousel'), api('/api/especiais'), api('/api/settings'),
+      api('/api/trash'),
     ])
-    setProducts(p); setCats(c); setCarousel(cr); setEspeciais(es)
+    setProducts(p); setCats(c); setCarousel(cr); setEspeciais(es); setTrash(tr)
     setSettings({ wa_number: st.wa_number ?? '', admin_name: st.admin_name ?? 'Aladiane' })
     if (st.appearance) setAppCfg(st.appearance)
   }, [])
@@ -79,13 +85,16 @@ export default function AdminPage() {
   const saveProd = async () => {
     if (!form.name.trim()) { showToast('Insira o nome do produto.', 'err'); return }
     try {
-      let uploadedUrls = imgs.filter(u => u.startsWith('http'))
-      const toUpload = imgFiles
-      for (const file of toUpload) {
-        const fd = new FormData(); fd.append('file', file)
-        const r = await fetch('/api/upload', { method: 'POST', body: fd })
-        const j = await r.json()
-        if (j.url) uploadedUrls.push(j.url)
+      const uploadedUrls: string[] = []
+      for (const item of imgItems) {
+        if (item.src.startsWith('http')) {
+          uploadedUrls.push(item.src)
+        } else if (item.file) {
+          const fd = new FormData(); fd.append('file', item.file)
+          const r = await fetch('/api/upload', { method: 'POST', body: fd })
+          const j = await r.json()
+          if (j.url) uploadedUrls.push(j.url)
+        }
       }
       const body = { ...form, images: uploadedUrls }
       if (modal.id) {
@@ -101,7 +110,23 @@ export default function AdminPage() {
     if (!cfDel) return
     try {
       await api(`/api/products/${cfDel}`, { method: 'DELETE' })
-      await load(); setCfDel(null); showToast('Produto excluído.')
+      await load(); setCfDel(null); showToast('Produto movido para a lixeira.')
+    } catch (e: unknown) { showToast((e as Error).message, 'err') }
+  }
+
+  /* lixeira */
+  const restoreProduct = async (id: string) => {
+    try {
+      await api(`/api/trash/${id}`, { method: 'POST' })
+      await load(); showToast('Produto restaurado!')
+    } catch (e: unknown) { showToast((e as Error).message, 'err') }
+  }
+
+  const permDelete = async () => {
+    if (!cfPermDel) return
+    try {
+      await api(`/api/trash/${cfPermDel}`, { method: 'DELETE' })
+      await load(); setCfPermDel(null); showToast('Excluído permanentemente.')
     } catch (e: unknown) { showToast((e as Error).message, 'err') }
   }
 
@@ -109,12 +134,22 @@ export default function AdminPage() {
     if (id) {
       const p = products.find(x => x.id === id)!
       setForm({ name: p.name, category: p.category, det: p.det ?? '', price: p.price ?? '', fabric: p.fabric ?? '', wa: p.wa ?? '', featured: !!p.featured })
-      setImgs(p.images ?? []); setImgFiles([])
+      setImgItems((p.images ?? []).map(src => ({ src })))
     } else {
       setForm({ name: '', category: cats[0]?.id ?? '', det: '', price: '', fabric: '', wa: '', featured: false })
-      setImgs([]); setImgFiles([])
+      setImgItems([])
     }
     setModal({ open: true, id })
+  }
+
+  /* reorder images */
+  const moveImg = (from: number, to: number) => {
+    setImgItems(prev => {
+      const next = [...prev]
+      const [item] = next.splice(from, 1)
+      next.splice(to, 0, item)
+      return next
+    })
   }
 
   /* carousel / especiais */
@@ -156,6 +191,13 @@ export default function AdminPage() {
     if (products.some(p => p.category === id)) { showToast('Mova os produtos antes de excluir.', 'err'); return }
     await api(`/api/categories/${id}`, { method: 'DELETE' }); await load(); showToast('Categoria removida.')
   }
+  const renameCat = async (id: string) => {
+    if (!renameVal.trim()) return
+    try {
+      await api(`/api/categories/${id}`, { method: 'PUT', body: JSON.stringify({ label: renameVal.trim() }) })
+      await load(); setRenamingCat(null); showToast('Categoria renomeada!')
+    } catch (e: unknown) { showToast((e as Error).message, 'err') }
+  }
 
   /* appearance */
   const saveAppearance = async () => {
@@ -174,19 +216,20 @@ export default function AdminPage() {
     } catch (e: unknown) { showToast((e as Error).message, 'err') }
   }
 
-  /* img preview */
+  /* img upload */
   const handleFiles = (files: FileList | null) => {
     if (!files) return
     Array.from(files).forEach(f => {
-      const r = new FileReader(); r.onload = e => setImgs(prev => [...prev, e.target!.result as string])
-      setImgFiles(prev => [...prev, f]); r.readAsDataURL(f)
+      const r = new FileReader()
+      r.onload = e => setImgItems(prev => [...prev, { src: e.target!.result as string, file: f }])
+      r.readAsDataURL(f)
     })
   }
 
   const filtered = activeFilter === 'todos' ? products : products.filter(p => p.category === activeFilter)
   const feat = products.filter(p => p.featured).slice(0, 4)
 
-  const pgTitles: Record<string, string> = { dash: 'Dashboard', produtos: 'Nossos Produtos', colecoes: 'Coleções', aparencia: 'Aparência', settings: 'Configurações' }
+  const pgTitles: Record<string, string> = { dash: 'Dashboard', produtos: 'Nossos Produtos', colecoes: 'Coleções', aparencia: 'Aparência', settings: 'Configurações', lixeira: 'Lixeira' }
 
   useEffect(() => {
     fetch('/api/auth', { method: 'POST', body: JSON.stringify({ action: 'check' }), headers: { 'Content-Type': 'application/json' } })
@@ -237,6 +280,11 @@ export default function AdminPage() {
             <button className={`sbl${page === 'aparencia' ? ' on' : ''}`} onClick={() => { setPage('aparencia'); sbRef.current?.classList.remove('open') }}><span className="ico">🎨</span><span className="lbl">Aparência</span></button>
             <div className="sb-grp">Sistema</div>
             <button className={`sbl${page === 'settings' ? ' on' : ''}`} onClick={() => { setPage('settings'); sbRef.current?.classList.remove('open') }}><span className="ico">⚙️</span><span className="lbl">Configurações</span></button>
+            <button className={`sbl${page === 'lixeira' ? ' on' : ''}`} onClick={() => { setPage('lixeira'); sbRef.current?.classList.remove('open') }}>
+              <span className="ico">🗑️</span>
+              <span className="lbl">Lixeira</span>
+              {trash.length > 0 && <span className="bdg">{trash.length}</span>}
+            </button>
             <a className="sbl" href="/" target="_blank"><span className="ico">🔗</span><span className="lbl">Ver portfólio</span></a>
           </div>
           <div className="sb-foot">
@@ -291,7 +339,7 @@ export default function AdminPage() {
                 {!filtered.length && (
                   <div className="empty">
                     <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="8" y="14" width="48" height="38" rx="6"/><path d="M22 14v-4a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v4"/><line x1="32" y1="28" x2="32" y2="42"/><line x1="25" y1="35" x2="39" y2="35"/></svg>
-                    <h3>Nenhum produto aqui</h3><p>Clique em "Novo produto" para adicionar.</p>
+                    <h3>Nenhum produto aqui</h3><p>Clique em &quot;Novo produto&quot; para adicionar.</p>
                   </div>
                 )}
               </div>
@@ -330,7 +378,7 @@ export default function AdminPage() {
                 )}
                 {colTab === 'especiais' && (
                   <div>
-                    <p style={{ fontSize: '.84rem', color: 'var(--ink3)', marginBottom: 18, maxWidth: 560 }}>Escolha quais coleções aparecem na seção "Nossas Coleções" do portfólio.</p>
+                    <p style={{ fontSize: '.84rem', color: 'var(--ink3)', marginBottom: 18, maxWidth: 560 }}>Escolha quais coleções aparecem na seção &quot;Nossas Coleções&quot; do portfólio.</p>
                     <div className="slot-list">
                       {especiais.map((sl, i) => {
                         const cat = cats.find(c => c.id === sl.ref_id)
@@ -354,14 +402,32 @@ export default function AdminPage() {
                 )}
                 {colTab === 'categorias' && (
                   <div>
-                    <p style={{ fontSize: '.84rem', color: 'var(--ink3)', marginBottom: 18, maxWidth: 560 }}>Gerencie as categorias dos produtos.</p>
+                    <p style={{ fontSize: '.84rem', color: 'var(--ink3)', marginBottom: 18, maxWidth: 560 }}>Gerencie as categorias dos produtos. Clique no lápis para renomear qualquer categoria.</p>
                     <div className="cat-list">
                       {cats.map(c => (
-                        <div key={c.id} className={`cat-item${c.fixed ? ' cat-fixed' : ''}`}>
+                        <div key={c.id} className="cat-item">
                           <span className="cat-dot" style={{ background: c.color }}></span>
-                          <span className="cat-name">{c.label}</span>
-                          <span className="cat-badge">{products.filter(p => p.category === c.id).length} produtos</span>
-                          {c.fixed ? <span style={{ fontSize: '.66rem', color: 'var(--ink3)', padding: '3px 9px', background: 'var(--bg2)', borderRadius: 100 }}>Padrão</span> : <button className="cat-rm" onClick={() => removeCat(c.id)}>✕</button>}
+                          {renamingCat === c.id ? (
+                            <>
+                              <input
+                                className="cat-rename-input"
+                                autoFocus
+                                value={renameVal}
+                                onChange={e => setRenameVal(e.target.value)}
+                                onKeyDown={e => { if (e.key === 'Enter') renameCat(c.id); if (e.key === 'Escape') setRenamingCat(null) }}
+                              />
+                              <button className="cat-rename-ok" onClick={() => renameCat(c.id)}>✓</button>
+                              <button className="cat-rename-cancel" onClick={() => setRenamingCat(null)}>✕</button>
+                            </>
+                          ) : (
+                            <>
+                              <span className="cat-name">{c.label}</span>
+                              <span className="cat-badge">{products.filter(p => p.category === c.id).length} produtos</span>
+                              {c.fixed && <span style={{ fontSize: '.66rem', color: 'var(--ink3)', padding: '3px 9px', background: 'var(--bg2)', borderRadius: 100 }}>Padrão</span>}
+                              <button className="cat-edit" title="Renomear" onClick={() => { setRenamingCat(c.id); setRenameVal(c.label) }}>✏️</button>
+                              {!c.fixed && <button className="cat-rm" onClick={() => removeCat(c.id)}>✕</button>}
+                            </>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -437,6 +503,30 @@ export default function AdminPage() {
                 </div>
               </div>
             )}
+
+            {/* LIXEIRA */}
+            {page === 'lixeira' && (
+              <div>
+                {trash.length === 0 ? (
+                  <div className="empty">
+                    <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M52 18H12l3.5 36h29L52 18z"/><path d="M6 18h52"/><path d="M26 10h12"/><line x1="24" y1="28" x2="25" y2="46"/><line x1="32" y1="28" x2="32" y2="46"/><line x1="40" y1="28" x2="39" y2="46"/></svg>
+                    <h3>Lixeira vazia</h3>
+                    <p>Produtos excluídos aparecem aqui para recuperação.</p>
+                  </div>
+                ) : (
+                  <>
+                    <p style={{ fontSize: '.84rem', color: 'var(--ink3)', marginBottom: 18, maxWidth: 560 }}>
+                      Produtos excluídos ficam aqui. Restaure para recuperar ou exclua permanentemente.
+                    </p>
+                    <div className="pgrid">
+                      {trash.map(p => (
+                        <TrashCard key={p.id} p={p} cats={cats} onRestore={() => restoreProduct(p.id)} onPermDelete={() => setCfPermDel(p.id)} />
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -447,17 +537,36 @@ export default function AdminPage() {
           <div className="modal">
             <div className="mh"><h2>{modal.id ? 'Editar produto' : 'Novo produto'}</h2><button className="mcl" onClick={() => setModal({ open: false, id: null })}>✕</button></div>
             <div className="mb">
-              <div className="fld" style={{ marginBottom: 6 }}><label>Foto(s) do produto</label></div>
+              <div className="fld" style={{ marginBottom: 6 }}>
+                <label>Foto(s) do produto</label>
+                <div style={{ fontSize: '.68rem', color: 'var(--ink3)', marginBottom: 4 }}>A primeira foto será a capa. Arraste para reordenar.</div>
+              </div>
               <div className="uz" onDragOver={e => e.preventDefault()} onDrop={e => { e.preventDefault(); handleFiles(e.dataTransfer.files) }}>
                 <input type="file" accept="image/*" multiple onChange={e => handleFiles(e.target.files)} />
                 <div className="ui">📷</div><div className="ul">Toque para escolher ou arraste</div><div className="us">JPG, PNG · câmera ou galeria</div>
               </div>
-              {imgs.length > 0 && (
+              {imgItems.length > 0 && (
                 <div className="upvs">
-                  {imgs.map((src, i) => (
-                    <div key={i} className="upv">
-                      <img src={src} alt="" />
-                      <button className="rm" onClick={() => { setImgs(p => p.filter((_, j) => j !== i)); setImgFiles(p => p.filter((_, j) => j !== i)) }}>✕</button>
+                  {imgItems.map((item, i) => (
+                    <div
+                      key={i}
+                      className={`upv${i === 0 ? ' upv-cover' : ''}`}
+                      draggable
+                      onDragStart={() => { dragImgIdx.current = i }}
+                      onDragOver={e => e.preventDefault()}
+                      onDrop={() => {
+                        if (dragImgIdx.current === null || dragImgIdx.current === i) return
+                        moveImg(dragImgIdx.current, i)
+                        dragImgIdx.current = null
+                      }}
+                    >
+                      <img src={item.src} alt="" />
+                      {i === 0 && <span className="upv-capa">Capa</span>}
+                      <div className="upv-arrows">
+                        {i > 0 && <button className="upv-arr" onClick={() => moveImg(i, i - 1)}>‹</button>}
+                        {i < imgItems.length - 1 && <button className="upv-arr" onClick={() => moveImg(i, i + 1)}>›</button>}
+                      </div>
+                      <button className="rm" onClick={() => setImgItems(prev => prev.filter((_, j) => j !== i))}>✕</button>
                     </div>
                   ))}
                 </div>
@@ -518,14 +627,26 @@ export default function AdminPage() {
         </div>
       )}
 
-      {/* CONFIRM DELETE */}
+      {/* CONFIRM DELETE (move to trash) */}
       {cfDel && (
         <div className="ov open" onClick={e => e.target === e.currentTarget && setCfDel(null)}>
           <div className="cbox">
             <div className="ci">🗑️</div>
-            <h3>Excluir produto?</h3>
-            <p>Esta ação não pode ser desfeita.</p>
-            <div className="cbox-btns"><button className="btn-cancel" onClick={() => setCfDel(null)}>Cancelar</button><button className="btn-del" onClick={delProd}>Excluir</button></div>
+            <h3>Mover para lixeira?</h3>
+            <p>O produto ficará na lixeira e poderá ser restaurado.</p>
+            <div className="cbox-btns"><button className="btn-cancel" onClick={() => setCfDel(null)}>Cancelar</button><button className="btn-del" onClick={delProd}>Mover</button></div>
+          </div>
+        </div>
+      )}
+
+      {/* CONFIRM PERMANENT DELETE */}
+      {cfPermDel && (
+        <div className="ov open" onClick={e => e.target === e.currentTarget && setCfPermDel(null)}>
+          <div className="cbox">
+            <div className="ci">⚠️</div>
+            <h3>Excluir permanentemente?</h3>
+            <p>Esta ação não pode ser desfeita. O produto será perdido para sempre.</p>
+            <div className="cbox-btns"><button className="btn-cancel" onClick={() => setCfPermDel(null)}>Cancelar</button><button className="btn-del" onClick={permDelete}>Excluir</button></div>
           </div>
         </div>
       )}
@@ -535,6 +656,31 @@ export default function AdminPage() {
         <div className={`toast show ${toast.type}`}><span className="tdot"></span><span>{toast.msg}</span></div>
       )}
     </>
+  )
+}
+
+function TrashCard({ p, cats, onRestore, onPermDelete }: { p: Product; cats: Category[]; onRestore: () => void; onPermDelete: () => void }) {
+  const cat = cats.find(c => c.id === p.category)
+  return (
+    <div className="pcard trash-card">
+      <div className="pcimg">
+        {p.images?.[0] ? <img src={p.images[0]} alt={p.name} loading="lazy" /> : <div style={{ width: '100%', height: '100%', display: 'grid', placeItems: 'center', color: 'var(--ink3)', fontSize: '2rem' }}>🧸</div>}
+        <div className="pcbdg">
+          <span className="bdg bdg-cat">{cat?.label ?? p.category}</span>
+        </div>
+        <div className="pcact">
+          <button className="pca ed" title="Restaurar" onClick={e => { e.stopPropagation(); onRestore() }}>↩️</button>
+          <button className="pca dl" title="Excluir permanentemente" onClick={e => { e.stopPropagation(); onPermDelete() }}>🗑</button>
+        </div>
+      </div>
+      <div className="pcbody">
+        <div className="pcn">{p.name}</div>
+        <div className="pcd">{p.det}</div>
+        <div className="pcft">
+          <button className="trash-restore-btn" onClick={onRestore}>Restaurar</button>
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -652,6 +798,7 @@ button,input,select,textarea{font-family:inherit;font-size:inherit}
 .pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(188px,1fr));gap:13px}
 .pcard{background:var(--white);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;transition:box-shadow .28s var(--ez),transform .28s var(--ez);position:relative;cursor:pointer}
 .pcard:hover{box-shadow:var(--sh);transform:translateY(-3px)}
+.trash-card{opacity:.82}
 .pcimg{aspect-ratio:1;background:var(--bg2);overflow:hidden;position:relative}
 .pcimg img{width:100%;height:100%;object-fit:cover;transition:transform .5s var(--ez)}
 .pcard:hover .pcimg img{transform:scale(1.04)}
@@ -670,6 +817,8 @@ button,input,select,textarea{font-family:inherit;font-size:inherit}
 .pcft{display:flex;align-items:center;justify-content:space-between}
 .pcp{font-size:.8rem;font-weight:700;color:var(--brand)}
 .pcf{font-size:.66rem;color:var(--ink3)}
+.trash-restore-btn{font-size:.72rem;font-weight:600;color:var(--brand);background:var(--brand-p);border:none;border-radius:100px;padding:4px 11px;cursor:pointer;transition:background .2s}
+.trash-restore-btn:hover{background:color-mix(in srgb,var(--brand) 18%,transparent)}
 .empty{text-align:center;padding:52px 20px;color:var(--ink3)}
 .empty svg{width:56px;margin:0 auto 13px;opacity:.28}
 .empty h3{font-family:'Cormorant Garamond',serif;font-size:1.2rem;color:var(--ink2);margin-bottom:5px}
@@ -695,7 +844,13 @@ button,input,select,textarea{font-family:inherit;font-size:inherit}
 .cat-badge{font-size:.64rem;background:var(--bg2);color:var(--ink3);padding:3px 9px;border-radius:100px}
 .cat-rm{width:28px;height:28px;border-radius:7px;border:none;cursor:pointer;display:grid;place-items:center;font-size:.8rem;background:var(--redp);color:var(--red);transition:background .2s;flex:none}
 .cat-rm:hover{background:rgba(192,104,90,.24)}
-.cat-fixed{opacity:.55;pointer-events:none}
+.cat-edit{width:28px;height:28px;border-radius:7px;border:none;cursor:pointer;display:grid;place-items:center;font-size:.78rem;background:var(--bg2);color:var(--ink2);transition:background .2s;flex:none}
+.cat-edit:hover{background:var(--bg3)}
+.cat-rename-input{flex:1;padding:6px 10px;border:1.5px solid var(--brand);border-radius:8px;background:var(--bg);color:var(--ink);font-size:.88rem;outline:none}
+.cat-rename-ok{width:28px;height:28px;border-radius:7px;border:none;cursor:pointer;display:grid;place-items:center;font-size:.9rem;background:var(--brand-p);color:var(--brand);font-weight:700;flex:none;transition:background .2s}
+.cat-rename-ok:hover{background:color-mix(in srgb,var(--brand) 22%,transparent)}
+.cat-rename-cancel{width:28px;height:28px;border-radius:7px;border:none;cursor:pointer;display:grid;place-items:center;font-size:.8rem;background:var(--bg2);color:var(--ink3);flex:none;transition:background .2s}
+.cat-rename-cancel:hover{background:var(--bg3)}
 .cat-add-row{display:flex;gap:9px;margin-top:6px}
 .cat-add-row input{flex:1;padding:10px 13px;border:1.5px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font-size:.88rem;outline:none;transition:border-color .22s}
 .cat-add-row input:focus{border-color:var(--brand)}
@@ -752,9 +907,17 @@ button,input,select,textarea{font-family:inherit;font-size:inherit}
 .uz .ui{font-size:1.8rem;line-height:1}
 .uz .ul{font-size:.8rem;color:var(--ink2);font-weight:500}
 .uz .us{font-size:.7rem;color:var(--ink3)}
-.upvs{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}
-.upv{position:relative;width:68px;height:68px;border-radius:9px;overflow:hidden;border:1.5px solid var(--line)}
+.upvs{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px;margin-bottom:10px}
+.upv{position:relative;width:80px;height:80px;border-radius:9px;overflow:hidden;border:1.5px solid var(--line);cursor:grab;transition:box-shadow .2s,transform .2s}
+.upv:active{cursor:grabbing}
+.upv:hover{box-shadow:var(--shs);transform:scale(1.03)}
 .upv img{width:100%;height:100%;object-fit:cover}
+.upv-cover{border:2px solid var(--brand)}
+.upv-capa{position:absolute;bottom:0;left:0;right:0;background:var(--brand);color:#fff;font-size:.52rem;font-weight:700;letter-spacing:.08em;text-align:center;padding:3px 0;text-transform:uppercase}
+.upv-arrows{position:absolute;top:3px;left:3px;display:flex;gap:2px;opacity:0;transition:opacity .18s}
+.upv:hover .upv-arrows{opacity:1}
+.upv-arr{width:18px;height:18px;border-radius:4px;border:none;background:rgba(255,255,255,.9);cursor:pointer;font-size:.75rem;display:grid;place-items:center;line-height:1;padding:0;color:var(--ink);font-weight:700}
+.upv-arr:hover{background:#fff}
 .upv .rm{position:absolute;top:3px;right:3px;width:18px;height:18px;border-radius:50%;background:rgba(192,104,90,.9);border:none;cursor:pointer;color:#fff;font-size:.56rem;display:grid;place-items:center}
 .tr{display:flex;align-items:center;justify-content:space-between;padding:13px 15px;background:var(--bg);border-radius:11px;margin-bottom:13px}
 .tr .trl h4{font-size:.85rem;font-weight:600;margin-bottom:2px}
