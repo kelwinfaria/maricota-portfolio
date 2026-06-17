@@ -1,19 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { isAuthenticated } from '@/lib/auth'
+import { readJson } from '@/lib/api-validation'
 
 export async function POST(req: NextRequest) {
-  if (!await isAuthenticated()) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
+  if (!await isAuthenticated()) return NextResponse.json({ error: 'Nao autorizado' }, { status: 401 })
 
-  const { oldPassword, newPassword } = await req.json()
+  const body = await readJson(req)
+  if (!body || typeof body !== 'object' || Array.isArray(body)) {
+    return NextResponse.json({ error: 'Payload invalido' }, { status: 400 })
+  }
 
-  if (oldPassword !== process.env.ADMIN_PASSWORD) {
+  const { oldPassword, newPassword } = body as Record<string, unknown>
+
+  if (typeof oldPassword !== 'string' || oldPassword !== process.env.ADMIN_PASSWORD) {
     return NextResponse.json({ error: 'Senha atual incorreta.' }, { status: 401 })
   }
-  if (!newPassword || newPassword.length < 6) {
-    return NextResponse.json({ error: 'Nova senha: mínimo 6 caracteres.' }, { status: 400 })
+  if (typeof newPassword !== 'string' || newPassword.length < 6) {
+    return NextResponse.json({ error: 'Nova senha: minimo 6 caracteres.' }, { status: 400 })
   }
 
-  // In production, store in env via Vercel dashboard. Here we just acknowledge.
-  // The new password takes effect after updating ADMIN_PASSWORD in Vercel env vars.
-  return NextResponse.json({ ok: true, note: 'Atualize ADMIN_PASSWORD nas variáveis de ambiente da Vercel.' })
+  return NextResponse.json(
+    { error: 'Atualize ADMIN_PASSWORD nas variaveis de ambiente da Vercel para alterar a senha.' },
+    { status: 501 }
+  )
 }

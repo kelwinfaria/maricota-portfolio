@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
 import { isAuthenticated } from '@/lib/auth'
+import { badRequest, readJson, validateProductPayload } from '@/lib/api-validation'
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  if (!await isAuthenticated()) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
+  if (!await isAuthenticated()) return NextResponse.json({ error: 'Nao autorizado' }, { status: 401 })
 
   const { id } = await params
-  const body = await req.json()
+  const body = validateProductPayload(await readJson(req))
+  if (typeof body === 'string') return badRequest(body)
+
   const { data, error } = await supabaseAdmin
     .from('products')
     .update(body)
@@ -19,7 +22,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 }
 
 export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  if (!await isAuthenticated()) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
+  if (!await isAuthenticated()) return NextResponse.json({ error: 'Nao autorizado' }, { status: 401 })
 
   const { id } = await params
   const { error } = await supabaseAdmin

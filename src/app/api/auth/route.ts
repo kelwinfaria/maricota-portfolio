@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { setSession, clearSession } from '@/lib/auth'
+import { readJson } from '@/lib/api-validation'
 
 export async function POST(req: NextRequest) {
-  const { password, action } = await req.json()
+  const body = await readJson(req)
+  if (!body || typeof body !== 'object' || Array.isArray(body)) {
+    return NextResponse.json({ error: 'Payload invalido' }, { status: 400 })
+  }
+
+  const { password, action } = body as Record<string, unknown>
 
   if (action === 'check') {
     const { isAuthenticated } = await import('@/lib/auth')
@@ -15,7 +21,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true })
   }
 
-  if (password !== process.env.ADMIN_PASSWORD) {
+  if (typeof password !== 'string' || password !== process.env.ADMIN_PASSWORD) {
     return NextResponse.json({ error: 'Senha incorreta' }, { status: 401 })
   }
 

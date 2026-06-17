@@ -3,7 +3,7 @@ import { supabaseAdmin } from '@/lib/supabase'
 import { isAuthenticated } from '@/lib/auth'
 
 export async function GET() {
-  if (!await isAuthenticated()) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
+  if (!await isAuthenticated()) return NextResponse.json({ error: 'Nao autorizado' }, { status: 401 })
 
   const { data, error } = await supabaseAdmin
     .from('products')

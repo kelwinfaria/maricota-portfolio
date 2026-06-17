@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase, supabaseAdmin } from '@/lib/supabase'
 import { isAuthenticated } from '@/lib/auth'
+import { badRequest, readJson, validateSettingsPayload } from '@/lib/api-validation'
 
 export async function GET() {
   const { data, error } = await supabase.from('settings').select('*')
@@ -12,9 +13,11 @@ export async function GET() {
 }
 
 export async function PUT(req: NextRequest) {
-  if (!await isAuthenticated()) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
+  if (!await isAuthenticated()) return NextResponse.json({ error: 'Nao autorizado' }, { status: 401 })
 
-  const body: Record<string, unknown> = await req.json()
+  const body = validateSettingsPayload(await readJson(req))
+  if (typeof body === 'string') return badRequest(body)
+
   const rows = Object.entries(body).map(([key, value]) => ({ key, value }))
 
   const { error } = await supabaseAdmin

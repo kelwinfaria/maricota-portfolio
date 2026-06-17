@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase, supabaseAdmin } from '@/lib/supabase'
 import { isAuthenticated } from '@/lib/auth'
+import { badRequest, readJson, validateCategoryPayload } from '@/lib/api-validation'
 
 export async function GET() {
   const { data, error } = await supabase
@@ -13,9 +14,11 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  if (!await isAuthenticated()) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
+  if (!await isAuthenticated()) return NextResponse.json({ error: 'Nao autorizado' }, { status: 401 })
 
-  const body = await req.json()
+  const body = validateCategoryPayload(await readJson(req))
+  if (typeof body === 'string') return badRequest(body)
+
   const { data, error } = await supabaseAdmin
     .from('categories')
     .insert([body])
