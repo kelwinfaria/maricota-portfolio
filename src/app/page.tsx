@@ -109,8 +109,9 @@ export default async function Home() {
 
   const waUrl = wa.startsWith('http') ? wa : `https://wa.me/${wa.replace(/\D/g, '')}`
 
-  const carouselSlides = carousel.length > 0
-    ? carousel.map(s => carouselSlideHTML(s, products)).join('')
+  const carouselFromSlots = carousel.map(s => carouselSlideHTML(s, products)).join('')
+  const carouselSlides = carouselFromSlots.length > 0
+    ? carouselFromSlots
     : products.filter(p => p.featured).slice(0, 4).map(p =>
         `<div class="cslide"><img src="${p.images?.[0] ?? ''}" alt="${p.name}"><div class="cgrad"></div><div class="ccap"><div class="cn">${p.name}</div><div class="cd">Bichinho feito à mão</div></div></div>`
       ).join('')
