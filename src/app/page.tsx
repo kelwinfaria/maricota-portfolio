@@ -165,15 +165,6 @@ nav.sc{border-bottom-color:var(--line);background:rgba(252,251,248,.95)}
 .n-r{display:flex;align-items:center;gap:10px}
 .wa-p{display:inline-flex;align-items:center;gap:8px;background:var(--olive);color:#fff;text-decoration:none;font-size:.76rem;font-weight:500;padding:10px 17px;border-radius:100px;transition:transform .3s var(--ez),background .3s;box-shadow:0 10px 24px -14px var(--olive)}
 .wa-p:hover{transform:translateY(-2px);background:var(--olived)}
-.burger{display:none;width:40px;height:40px;border:none;background:none;cursor:pointer;flex-direction:column;gap:5px;align-items:center;justify-content:center}
-.burger span{width:20px;height:2px;background:var(--ink);border-radius:2px;transition:transform .35s var(--ez),opacity .25s;display:block}
-.burger.op span:first-child{transform:translateY(7px) rotate(45deg)}
-.burger.op span:nth-child(2){opacity:0}
-.burger.op span:last-child{transform:translateY(-7px) rotate(-45deg)}
-.mmenu{position:fixed;inset:0;z-index:590;background:rgba(252,251,248,.97);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;opacity:0;visibility:hidden;transition:opacity .35s,visibility .35s}
-.mmenu.op{opacity:1;visibility:visible}
-.mmenu a{font-family:'Cormorant Garamond',serif;font-size:2rem;color:var(--ink);text-decoration:none;padding:8px 0;font-style:italic;transition:color .3s}
-.mmenu a:hover{color:var(--olive)}
 .hero{padding:110px 0 64px;overflow:hidden;background:var(--bg)}
 .hero-g{display:grid;grid-template-columns:1.08fr .92fr;gap:clamp(36px,6vw,80px);align-items:center}
 .hero-logo{height:clamp(54px,8vw,90px);margin-bottom:18px}
@@ -203,12 +194,14 @@ nav.sc{border-bottom-color:var(--line);background:rgba(252,251,248,.95)}
 .cdot{width:22px;height:3px;border-radius:2px;background:var(--line);cursor:pointer;border:none;padding:0;transition:background .3s,width .4s var(--ez)}
 .cdot.on{background:var(--olive);width:32px}
 .chint{font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;color:var(--inks)}
-.strip{background:var(--bg2);border-top:1px solid var(--lines);border-bottom:1px solid var(--lines)}
-.strip-in{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;padding:22px clamp(20px,5vw,40px);max-width:var(--mw);margin:0 auto}
-.spill{display:flex;align-items:center;gap:9px;background:var(--bg);border:1px solid var(--line);border-radius:100px;padding:11px 18px;font-size:.8rem;color:var(--inkm);min-height:44px}
+.strip{background:var(--bg2);border-top:1px solid var(--lines);border-bottom:1px solid var(--lines);overflow:hidden}
+.marq{display:flex;width:max-content;animation:marq 32s linear infinite;align-items:center;gap:10px;padding:16px 5px}
+@keyframes marq{to{transform:translateX(-50%)}}
+.strip:hover .marq{animation-play-state:paused}
+.spill{display:flex;align-items:center;gap:9px;background:var(--bg);border:1px solid var(--line);border-radius:100px;padding:11px 18px;font-size:.8rem;color:var(--inkm);min-height:44px;flex:none;margin-right:5px}
 .spill .si{width:24px;height:24px;border-radius:50%;background:var(--sages);color:var(--sage);display:grid;place-items:center;font-size:.78rem;flex:none}
 .spill b{color:var(--ink);font-weight:600}
-.sh{text-align:center;max-width:620px;margin:0 auto}
+.sh{text-align:center;max-width:620px;margin:0 auto 40px}
 .sh .ey{display:inline-flex;align-items:center;gap:10px;margin-bottom:12px}
 .sh .ey::before,.sh .ey::after{content:'';width:22px;height:1px;background:var(--sage);opacity:.6}
 .sh h2{font-size:clamp(2rem,4.5vw,3.2rem)}
@@ -346,8 +339,12 @@ footer{background:var(--ink);color:#fff;padding:56px 0 calc(30px + env(safe-area
 .rv{opacity:0;transform:translateY(22px);transition:opacity .75s var(--ez),transform .75s var(--ez)}
 .rv.vis{opacity:1;transform:none}
 @media(max-width:900px){
-  .nav-links{display:none}.burger{display:flex}
   .rv{opacity:1;transform:none}
+  nav{padding:10px clamp(12px,4vw,22px)}
+  .nav-links{gap:14px;overflow-x:auto;scrollbar-width:none}
+  .nav-links::-webkit-scrollbar{display:none}
+  .nav-links a{font-size:.64rem;white-space:nowrap}
+  .wa-p{padding:8px 12px;font-size:.68rem;gap:6px}
   .hero{padding:96px 0 46px}
   .hero-g{grid-template-columns:1fr;gap:38px;text-align:center}
   .hero-logo{margin-inline:auto}.hlead{margin-inline:auto}.hctas{justify-content:center}
@@ -380,10 +377,6 @@ footer{background:var(--ink);color:#fff;padding:56px 0 calc(30px + env(safe-area
 const nav=document.getElementById('nav'),fab=document.getElementById('fab');
 const onScroll=()=>{nav.classList.toggle('sc',scrollY>20);fab.classList.toggle('show',scrollY>520)};
 addEventListener('scroll',onScroll,{passive:true});onScroll();
-const burger=document.getElementById('burger'),mmenu=document.getElementById('mmenu');
-function toggleMenu(o){const op=o??!mmenu.classList.contains('op');mmenu.classList.toggle('op',op);burger.classList.toggle('op',op);document.body.style.overflow=op?'hidden':''}
-burger.addEventListener('click',()=>toggleMenu());
-mmenu.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>toggleMenu(false)));
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('vis');io.unobserve(e.target)}}),{threshold:.1,rootMargin:'0px 0px -6% 0px'});
 document.querySelectorAll('.rv').forEach(el=>io.observe(el));
 const ctrack=document.getElementById('ctrack'),cdots=document.getElementById('cdots');
@@ -448,13 +441,8 @@ addEventListener('keydown',e=>{if(e.key==='Escape')closeLB()});`
         </div>
         <div className="n-r">
           <a className="wa-p" href={waUrl} target="_blank" rel="noopener" dangerouslySetInnerHTML={{ __html: waIcon + ' Encomendar' }} />
-          <button className="burger" id="burger"><span></span><span></span><span></span></button>
         </div>
       </nav>
-      <div className="mmenu" id="mmenu">
-        <a href="#sobre">Sobre</a><a href="#colecoes">Coleções</a>
-        <a href="#produtos">Produtos</a><a href="#encomendar">Encomendar</a>
-      </div>
       <span id="top"></span>
 
       <header className="hero">
@@ -481,8 +469,12 @@ addEventListener('keydown',e=>{if(e.key==='Escape')closeLB()});`
         </div>
       </header>
 
-      <div className="strip">
-        <div className="strip-in">
+      <div className="strip" aria-hidden="true">
+        <div className="marq">
+          <div className="spill"><span className="si">✦</span><span><b>Peças únicas</b>, feitas à mão</span></div>
+          <div className="spill"><span className="si">✈</span><span>Envio para <b>todo o Brasil</b></span></div>
+          <div className="spill"><span className="si">❀</span><span>Materiais <b>seguros e macios</b></span></div>
+          <div className="spill"><span className="si">♥</span><span><b>Personalização</b> sob encomenda</span></div>
           <div className="spill"><span className="si">✦</span><span><b>Peças únicas</b>, feitas à mão</span></div>
           <div className="spill"><span className="si">✈</span><span>Envio para <b>todo o Brasil</b></span></div>
           <div className="spill"><span className="si">❀</span><span>Materiais <b>seguros e macios</b></span></div>
@@ -514,12 +506,22 @@ addEventListener('keydown',e=>{if(e.key==='Escape')closeLB()});`
 
       <section id="colecoes" style={{ padding: 'clamp(70px,9vw,100px) 0' }}>
         <div className="wrap">
+          <div className="sh rv">
+            <p className="ey">Nosso Ateliê</p>
+            <h2>Nossas Coleções</h2>
+            <p className="sub">Peças únicas, costuradas com carinho e dedicação.</p>
+          </div>
           <div className="cc-grid rv" dangerouslySetInnerHTML={{ __html: especialCards }} />
         </div>
       </section>
 
       <section className="produtos" id="produtos">
         <div className="wrap">
+          <div className="sh rv">
+            <p className="ey">Portfólio</p>
+            <h2>Nossos Produtos</h2>
+            <p className="sub">Clique em qualquer peça para ver detalhes e encomendar.</p>
+          </div>
           <div className="filters rv" id="filters" dangerouslySetInnerHTML={{ __html: filterButtons }} />
           <div className="grid" id="grid" dangerouslySetInnerHTML={{ __html: productCards }} />
           <p className="cnote rv">As <b>roupinhas</b> têm troca de cor sob encomenda. Cada <b>porta maternidade</b> é personalizada com o nome e o bichinho do bebê.</p>
