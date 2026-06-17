@@ -245,7 +245,7 @@ nav.sc{border-bottom-color:var(--line);background:rgba(252,251,248,.95)}
 .cc-img{width:100%;height:100%}
 .cc-img img{width:100%;height:100%;object-fit:cover;transition:transform .8s var(--ez)}
 .cc:hover .cc-img img{transform:scale(1.04)}
-.cc-body{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;padding:clamp(16px,2.5vw,26px);background:linear-gradient(to top,rgba(34,31,22,.7),rgba(34,31,22,.1) 52%,transparent 72%)}
+.cc-body{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;padding:clamp(16px,2.5vw,26px);background:linear-gradient(to top,rgba(34,31,22,.7),rgba(34,31,22,.1) 52%,transparent 72%);text-align:center;align-items:center}
 .cc-lbl{font-size:.57rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.7);margin-bottom:5px;font-weight:500}
 .cc-title{font-family:'Cormorant Garamond',serif;font-size:clamp(1.4rem,2.2vw,1.9rem);color:#fff;font-weight:600;line-height:1.08}
 .cc.big .cc-title{font-size:clamp(1.8rem,3vw,2.5rem)}
