@@ -20,7 +20,7 @@ function ColecaoCard({ index, filterKey, label, sublabel, img }: {
 export function HomeColecoes({ products, categories, especiais }: {
   products: Product[]; categories: Category[]; especiais: EspecialSlot[]
 }) {
-  const cards = especiais.length > 0 ? especiais : categories.map(c => ({ type: 'category', ref_id: c.id, label: c.label }))
+  const cards = especiais.length > 0 ? especiais : categories.map(c => ({ type: 'category', ref_id: c.id, label: 'Coleção 2026' }))
   return (
     <section id="colecoes" style={{ padding: 'clamp(70px,9vw,100px) 0' }}>
       <div className="wrap">
