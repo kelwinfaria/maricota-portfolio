@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase'
+import { supabaseAdmin as supabase } from '@/lib/supabase'
 
 export const dynamic = 'force-dynamic'
 
@@ -310,7 +310,7 @@ nav.sc{border-bottom-color:var(--line);background:rgba(252,251,248,.95)}
 footer{background:var(--olive);color:#fff;padding:56px 0 calc(30px + env(safe-area-inset-bottom));overflow:hidden;text-align:center}
 .ft-illo{width:76px;height:52px;margin:0 auto 16px;opacity:.2;color:#fff;display:flex;align-items:center;justify-content:center}
 .ft-illo svg{width:100%;stroke-linecap:round;stroke-linejoin:round}
-.ft-logo{height:34px;margin:0 auto 13px;opacity:.86}
+.ft-logo{height:34px;margin:0 auto 13px;filter:brightness(0) invert(1);opacity:.9}
 .ft-tag{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.08rem;color:rgba(255,255,255,.54);margin-bottom:20px}
 .ft-heart{color:var(--sage)}
 .ft-links{display:flex;justify-content:center;gap:10px;margin-bottom:24px;flex-wrap:wrap}
