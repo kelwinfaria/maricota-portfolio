@@ -165,6 +165,15 @@ nav.sc{border-bottom-color:var(--line);background:rgba(252,251,248,.95)}
 .n-r{display:flex;align-items:center;gap:10px}
 .wa-p{display:inline-flex;align-items:center;gap:8px;background:var(--olive);color:#fff;text-decoration:none;font-size:.76rem;font-weight:500;padding:10px 17px;border-radius:100px;transition:transform .3s var(--ez),background .3s;box-shadow:0 10px 24px -14px var(--olive)}
 .wa-p:hover{transform:translateY(-2px);background:var(--olived)}
+.burger{display:none;width:40px;height:40px;border:none;background:none;cursor:pointer;flex-direction:column;gap:5px;align-items:center;justify-content:center;padding:0}
+.burger span{width:20px;height:2px;background:var(--ink);border-radius:2px;transition:transform .35s var(--ez),opacity .25s;display:block}
+.burger.op span:first-child{transform:translateY(7px) rotate(45deg)}
+.burger.op span:nth-child(2){opacity:0}
+.burger.op span:last-child{transform:translateY(-7px) rotate(-45deg)}
+.mmenu{position:fixed;inset:0;z-index:590;background:rgba(252,251,248,.97);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;opacity:0;visibility:hidden;transition:opacity .35s,visibility .35s}
+.mmenu.op{opacity:1;visibility:visible}
+.mmenu a{font-family:'Cormorant Garamond',serif;font-size:2rem;color:var(--ink);text-decoration:none;padding:8px 0;font-style:italic;transition:color .3s}
+.mmenu a:hover{color:var(--olive)}
 .hero{padding:110px 0 64px;overflow:hidden;background:var(--bg)}
 .hero-g{display:grid;grid-template-columns:1.08fr .92fr;gap:clamp(36px,6vw,80px);align-items:center}
 .hero-logo{height:clamp(54px,8vw,90px);margin-bottom:18px}
@@ -341,9 +350,8 @@ footer{background:var(--ink);color:#fff;padding:56px 0 calc(30px + env(safe-area
 @media(max-width:900px){
   .rv{opacity:1;transform:none}
   nav{padding:10px clamp(12px,4vw,22px)}
-  .nav-links{gap:14px;overflow-x:auto;scrollbar-width:none}
-  .nav-links::-webkit-scrollbar{display:none}
-  .nav-links a{font-size:.64rem;white-space:nowrap}
+  .nav-links{display:none}
+  .burger{display:flex}
   .wa-p{padding:8px 12px;font-size:.68rem;gap:6px}
   .hero{padding:96px 0 46px}
   .hero-g{grid-template-columns:1fr;gap:38px;text-align:center}
@@ -377,6 +385,10 @@ footer{background:var(--ink);color:#fff;padding:56px 0 calc(30px + env(safe-area
 const nav=document.getElementById('nav'),fab=document.getElementById('fab');
 const onScroll=()=>{nav.classList.toggle('sc',scrollY>20);fab.classList.toggle('show',scrollY>520)};
 addEventListener('scroll',onScroll,{passive:true});onScroll();
+const burger=document.getElementById('burger'),mmenu=document.getElementById('mmenu');
+function toggleMenu(o){const op=o??!mmenu.classList.contains('op');mmenu.classList.toggle('op',op);burger.classList.toggle('op',op);document.body.style.overflow=op?'hidden':''}
+burger.addEventListener('click',()=>toggleMenu());
+mmenu.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>toggleMenu(false)));
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('vis');io.unobserve(e.target)}}),{threshold:.1,rootMargin:'0px 0px -6% 0px'});
 document.querySelectorAll('.rv').forEach(el=>io.observe(el));
 const ctrack=document.getElementById('ctrack'),cdots=document.getElementById('cdots');
@@ -441,8 +453,13 @@ addEventListener('keydown',e=>{if(e.key==='Escape')closeLB()});`
         </div>
         <div className="n-r">
           <a className="wa-p" href={waUrl} target="_blank" rel="noopener" dangerouslySetInnerHTML={{ __html: waIcon + ' Encomendar' }} />
+          <button className="burger" id="burger"><span></span><span></span><span></span></button>
         </div>
       </nav>
+      <div className="mmenu" id="mmenu">
+        <a href="#sobre" >Sobre</a><a href="#colecoes">Coleções</a>
+        <a href="#produtos">Produtos</a><a href="#encomendar">Encomendar</a>
+      </div>
       <span id="top"></span>
 
       <header className="hero">
