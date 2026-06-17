@@ -570,6 +570,11 @@ addEventListener('keydown',e=>{if(e.key==='Escape')closeLB()});`
 
       <section className="encomendar" id="encomendar">
         <div className="wrap">
+          <div className="sh rv">
+            <p className="ey">Como funciona</p>
+            <h2>Como Encomendar</h2>
+            <p className="sub">Simples, rápido e com todo o carinho da Maricota.</p>
+          </div>
           <div className="pcards rv">
             <div className="pcard"><span className="pi">✎</span><h3>Feito por encomenda</h3><p>Cada peça é produzida com dedicação após o pedido. Consulte o prazo de produção disponível.</p><span className="ptag">Prazo sob consulta</span></div>
             <div className="pcard"><span className="pi">✈</span><h3>Frete para todo o Brasil</h3><p>Enviamos com todo carinho para qualquer canto do país. O amor da Maricota chega até você.</p><span className="ptag">Todo o Brasil</span></div>
