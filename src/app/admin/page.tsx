@@ -93,6 +93,7 @@ export default function AdminPage() {
           const fd = new FormData(); fd.append('file', item.file)
           const r = await fetch('/api/upload', { method: 'POST', body: fd })
           const j = await r.json()
+          if (!r.ok) throw new Error(j.error || 'Falha ao enviar imagem')
           if (j.url) uploadedUrls.push(j.url)
         }
       }

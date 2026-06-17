@@ -10,6 +10,7 @@ interface Product {
   price: string
   featured: boolean
   images: string[]
+  wa?: string
 }
 
 interface CarouselSlot {
@@ -36,7 +37,7 @@ interface Appearance {
 
 async function getData() {
   const [prods, cats, carousel, especiais, settingsRows] = await Promise.all([
-    supabase.from('products').select('*').order('created_at', { ascending: false }),
+    supabase.from('products').select('*').is('deleted_at', null).order('created_at', { ascending: false }),
     supabase.from('categories').select('*').order('position'),
     supabase.from('carousel_slots').select('*').order('position'),
     supabase.from('especiais_slots').select('*').order('position'),
@@ -67,8 +68,9 @@ function productCardHTML(p: Product, cats: Category[]) {
   const tagClass = p.featured ? 'ctag2 hot' : 'ctag2'
   const tagText = p.featured ? '★ Destaque' : catLabel
   const featClass = p.featured ? ' feat' : ''
+  const waData = p.wa ? p.wa.replace(/"/g, '&quot;') : ''
 
-  return `<article class="card${featClass}" data-category="${p.category}" data-det="${(p.det ?? '').replace(/"/g, '&quot;')}" data-price="${(p.price ?? '').replace(/"/g, '&quot;')}" data-cat-label="${catLabel}" data-images="${dataImages}">
+  return `<article class="card${featClass}" data-category="${p.category}" data-det="${(p.det ?? '').replace(/"/g, '&quot;')}" data-price="${(p.price ?? '').replace(/"/g, '&quot;')}" data-cat-label="${catLabel}" data-images="${dataImages}" data-wa="${waData}">
   <div class="card-med"><span class="${tagClass}">${tagText}</span><span class="czoom">⤢</span>${mainImg ? `<img src="${mainImg}" alt="${p.name}" loading="lazy">` : ''}${multiDots}</div>
   <div class="card-bod"><h3 class="card-name">${p.name}</h3><p class="card-det">${p.det ?? ''}</p><div class="card-ft"><span class="card-price">${p.price ?? ''}</span><span class="card-more">${moreText}</span></div></div>
 </article>`
@@ -105,7 +107,7 @@ function especialCardHTML(slot: EspecialSlot, products: Product[], categories: C
 export default async function Home() {
   const { products, categories, carousel, especiais, wa, appearance: app } = await getData()
 
-  const waUrl = `https://wa.me/${wa}`
+  const waUrl = wa.startsWith('http') ? wa : `https://wa.me/${wa.replace(/\D/g, '')}`
 
   const carouselSlides = carousel.length > 0
     ? carousel.map(s => carouselSlideHTML(s, products)).join('')
@@ -402,14 +404,18 @@ document.querySelectorAll('.filter').forEach(f=>{const k=f.dataset.filter;const 
 const lb=document.getElementById('lb'),lbImg=document.getElementById('lbImg'),
   lbCat=document.getElementById('lbCat'),lbName=document.getElementById('lbName'),
   lbDet=document.getElementById('lbDet'),lbPrice=document.getElementById('lbPrice'),
-  lbDots=document.getElementById('lbDots'),lbPrev=document.getElementById('lbPrev'),lbNext=document.getElementById('lbNext');
+  lbDots=document.getElementById('lbDots'),lbPrev=document.getElementById('lbPrev'),lbNext=document.getElementById('lbNext'),
+  lbWaBtn=document.querySelector('.lb-wa');
+const globalWaUrl='${waUrl}';
 let gallery=[],gi=0;
 function paint(){lbImg.style.opacity=0;lbImg.onload=()=>lbImg.style.opacity=1;lbImg.src=gallery[gi];if(lbImg.complete)lbImg.style.opacity=1;[...lbDots.children].forEach((d,i)=>d.classList.toggle('on',i===gi))}
+function resolveWa(raw){if(!raw)return globalWaUrl;if(raw.startsWith('http'))return raw;const digits=raw.replace(/\\D/g,'');return'https://wa.me/'+digits}
 function openLB(card){
   gallery=card.dataset.images.split('|').filter(Boolean);gi=0;
   lbCat.textContent=card.dataset.catLabel;
   lbName.innerHTML=card.querySelector('.card-name').innerHTML;
   lbDet.textContent=card.dataset.det;lbPrice.textContent=card.dataset.price;
+  if(lbWaBtn)lbWaBtn.href=resolveWa(card.dataset.wa||'');
   lbDots.innerHTML='';const multi=gallery.length>1;
   lbPrev.hidden=lbNext.hidden=!multi;
   if(multi)gallery.forEach((_,i)=>{const d=document.createElement('i');d.onclick=()=>{gi=i;paint()};lbDots.appendChild(d)});
