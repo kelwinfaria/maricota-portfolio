@@ -12,15 +12,25 @@ document.querySelectorAll('.rv').forEach(el=>{const r=el.getBoundingClientRect()
 setTimeout(()=>document.querySelectorAll('.rv:not(.vis)').forEach(el=>el.classList.add('vis')),400);
 const ctrack=document.getElementById('ctrack'),cdots=document.getElementById('cdots');
 const cslides=[...ctrack.children];let ci=0,ct=null;
-function goC(n){if(!cslides.length)return;ci=(n+cslides.length)%cslides.length;ctrack.style.transform='translateX(-'+ci*100+'%)';[...cdots.children].forEach((d,i)=>d.classList.toggle('on',i===ci))}
-let tx=0,ty=0,hSwipe=false;
+function goC(n){
+  if(!cslides.length)return;
+  cslides[ci].classList.remove('active');
+  [...cdots.children].forEach(d=>d.classList.remove('on'));
+  ci=(n+cslides.length)%cslides.length;
+  cslides[ci].classList.add('active');
+  const dot=cdots.children[ci];if(dot)dot.classList.add('on');
+}
 if(cslides.length>0){
-cslides.forEach((_,i)=>{const d=document.createElement('button');d.className='cdot'+(i===0?' on':'');d.setAttribute('aria-label','Slide '+(i+1));d.addEventListener('click',()=>{clearInterval(ct);goC(i);ct=setInterval(()=>goC(ci+1),4200)});cdots.appendChild(d)});
-ct=setInterval(()=>goC(ci+1),4200);
+  cslides[0].classList.add('active');
+  cslides.forEach((_,i)=>{const d=document.createElement('button');d.className='cdot'+(i===0?' on':'');d.setAttribute('aria-label','Slide '+(i+1));d.addEventListener('click',()=>{clearInterval(ct);goC(i);ct=setInterval(()=>goC(ci+1),4200)});cdots.appendChild(d)});
+  ct=setInterval(()=>goC(ci+1),4200);
+}
+let tx=0,ty=0,hSwipe=false;
 const cframe=document.getElementById('cframe');
-cframe.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY;hSwipe=false},{passive:true});
-cframe.addEventListener('touchmove',e=>{const dx=Math.abs(e.touches[0].clientX-tx),dy=Math.abs(e.touches[0].clientY-ty);if(!hSwipe&&(dx>5||dy>5))hSwipe=dx>dy;if(hSwipe)e.preventDefault()},{passive:false});
-cframe.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-tx;if(Math.abs(dx)>40){clearInterval(ct);goC(ci+(dx>0?-1:1));ct=setInterval(()=>goC(ci+1),4200)}},{passive:true});
+if(cframe){
+  cframe.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY;hSwipe=false},{passive:true});
+  cframe.addEventListener('touchmove',e=>{const dx=Math.abs(e.touches[0].clientX-tx),dy=Math.abs(e.touches[0].clientY-ty);if(!hSwipe&&(dx>5||dy>5))hSwipe=dx>dy;if(hSwipe)e.preventDefault()},{passive:false});
+  cframe.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-tx;if(Math.abs(dx)>40){clearInterval(ct);goC(ci+(dx>0?-1:1));ct=setInterval(()=>goC(ci+1),4200)}},{passive:true});
 }
 const cards=[...document.querySelectorAll('.card')];
 function goFilter(f){
