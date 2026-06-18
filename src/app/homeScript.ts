@@ -11,13 +11,15 @@ const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.targ
 document.querySelectorAll('.rv').forEach(el=>io.observe(el));
 requestAnimationFrame(()=>requestAnimationFrame(()=>{document.querySelectorAll('.rv:not(.vis)').forEach(el=>{if(el.getBoundingClientRect().top<window.innerHeight*.94)el.classList.add('vis')})}));
 const ctrack=document.getElementById('ctrack'),cdots=document.getElementById('cdots');
+if(ctrack&&cdots){
 const cslides=[...ctrack.children];let ci=0,ct=null;
 function goC(n){ci=(n+cslides.length)%cslides.length;ctrack.style.transform='translateX(-'+ci*100+'%)';[...cdots.children].forEach((d,i)=>d.classList.toggle('on',i===ci))}
 cslides.forEach((_,i)=>{const d=document.createElement('button');d.className='cdot'+(i===0?' on':'');d.setAttribute('aria-label','Slide '+(i+1));d.addEventListener('click',()=>{clearInterval(ct);goC(i);ct=setInterval(()=>goC(ci+1),4200)});cdots.appendChild(d)});
 if(cslides.length>0)ct=setInterval(()=>goC(ci+1),4200);
-let tx=0;
-ctrack.addEventListener('touchstart',e=>tx=e.touches[0].clientX,{passive:true});
-ctrack.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-tx;if(Math.abs(dx)>40){clearInterval(ct);goC(ci+(dx>0?-1:1));ct=setInterval(()=>goC(ci+1),4200)}},{passive:true});
+let tx=0,ty=0;
+ctrack.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY},{passive:true});
+ctrack.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-tx;const dy=e.changedTouches[0].clientY-ty;if(Math.abs(dx)>Math.abs(dy)&&Math.abs(dx)>30){clearInterval(ct);goC(ci+(dx>0?-1:1));ct=setInterval(()=>goC(ci+1),4200)}},{passive:true});
+}
 const cards=[...document.querySelectorAll('.card')];
 function goFilter(f){
   document.querySelectorAll('.filter').forEach(x=>x.classList.toggle('on',x.dataset.filter===f));
