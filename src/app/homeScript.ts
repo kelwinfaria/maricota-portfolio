@@ -8,7 +8,8 @@ function toggleMenu(o){const op=o??!mmenu.classList.contains('op');mmenu.classLi
 burger.addEventListener('click',()=>toggleMenu());
 mmenu.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>toggleMenu(false)));
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('vis');io.unobserve(e.target)}}),{threshold:.1,rootMargin:'0px 0px -6% 0px'});
-document.querySelectorAll('.rv').forEach(el=>io.observe(el));
+document.querySelectorAll('.rv').forEach(el=>{const r=el.getBoundingClientRect();if(r.bottom>0&&r.top<window.innerHeight)el.classList.add('vis');else io.observe(el)});
+setTimeout(()=>document.querySelectorAll('.rv:not(.vis)').forEach(el=>el.classList.add('vis')),400);
 const ctrack=document.getElementById('ctrack'),cdots=document.getElementById('cdots');
 const cslides=[...ctrack.children];let ci=0,ct=null;
 function goC(n){if(!cslides.length)return;ci=(n+cslides.length)%cslides.length;ctrack.style.transform='translateX(-'+ci*100+'%)';[...cdots.children].forEach((d,i)=>d.classList.toggle('on',i===ci))}

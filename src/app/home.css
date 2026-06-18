@@ -207,6 +207,7 @@ footer{background:var(--olive);color:#fff;padding:56px 0 calc(30px + env(safe-ar
 .lb-nav[hidden]{display:none}
 .rv{opacity:0;transform:translateY(22px);transition:opacity .75s var(--ez),transform .75s var(--ez)}
 .rv.vis{opacity:1;transform:none}
+.hero .rv{opacity:1;transform:none}
 @media(max-width:900px){
   .rv{opacity:1;transform:none}
   nav{padding:10px clamp(12px,4vw,22px)}
