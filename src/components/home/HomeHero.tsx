@@ -1,24 +1,32 @@
 interface CarouselSlot { type: string; ref_id: string; label: string }
-interface Product { id: string; name: string; images: string[]; featured: boolean }
+interface Product { id: string; name: string; images: string[] }
 
-function CarouselSlide({ prod, label }: { prod: Product; label?: string }) {
+function Slide({ prod, label }: { prod: Product; label: string }) {
   const img = prod.images?.[0] ?? ''
   return (
     <div className="cslide">
-      <img src={img} alt={prod.name} />
+      {img && <img src={img} alt={prod.name} />}
       <div className="cgrad" />
       <div className="ccap">
         <div className="cn">{prod.name}</div>
-        <div className="cd">{label ?? 'Bichinho feito à mão'}</div>
+        <div className="cd">{label || 'Coleção 2026'}</div>
       </div>
     </div>
   )
 }
 
-export function HomeHero({ waUrl }: { waUrl: string }) {
+export function HomeHero({ waUrl, products, carousel }: {
+  waUrl: string; products: Product[]; carousel: CarouselSlot[]
+}) {
+  const slides = carousel
+    .map(s => { const p = products.find(x => x.id === s.ref_id); return p ? { prod: p, label: s.label } : null })
+    .filter(Boolean) as { prod: Product; label: string }[]
+
+  const hasCarousel = slides.length > 0
+
   return (
     <header className="hero">
-      <div className="wrap">
+      <div className={`wrap ${hasCarousel ? 'hero-g' : ''}`}>
         <div className="rv">
           <img className="hero-logo" src="/images/logo-maricota.png" alt="Maricota" />
           <h1 className="htag">Maternidade dos sonhos,<span className="it">feita à mão.</span></h1>
@@ -31,6 +39,17 @@ export function HomeHero({ waUrl }: { waUrl: string }) {
             <a className="btn btng" href="#colecoes">Ver coleções</a>
           </div>
         </div>
+        {hasCarousel && (
+          <div className="cwrap rv">
+            <div className="cframe">
+              <span className="ctag-c"><i />Coleção 2026</span>
+              <div className="ctrack" id="ctrack">
+                {slides.map((s, i) => <Slide key={i} prod={s.prod} label={s.label} />)}
+              </div>
+            </div>
+            <div className="cfoot"><div className="cdots" id="cdots" /><span className="chint">deslize</span></div>
+          </div>
+        )}
       </div>
     </header>
   )

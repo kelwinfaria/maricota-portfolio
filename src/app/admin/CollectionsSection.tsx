@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import type { Slot, Product, Category } from './types'
 
 function slotMove(arr: Slot[], i: number, dir: number): Slot[] {
@@ -44,6 +45,14 @@ interface Props {
 
 export function CollectionsSection(p: Props) {
   const TABS: [string, string][] = [['carousel', '🎠 Carrossel da Capa'], ['especiais', '✦ Coleções Especiais'], ['categorias', '🏷️ Categorias']]
+
+  const [draft, setDraft] = useState<Slot[]>(p.carousel)
+  const [dirty, setDirty] = useState(false)
+
+  useEffect(() => { setDraft(p.carousel); setDirty(false) }, [p.carousel])
+
+  function updateDraft(next: Slot[]) { setDraft(next); setDirty(true) }
+
   return (
     <div>
       <div className="tabs">
@@ -53,17 +62,27 @@ export function CollectionsSection(p: Props) {
       </div>
       {p.colTab === 'carousel' && (
         <div>
-          <p style={{ fontSize: '.84rem', color: 'var(--ink3)', marginBottom: 18, maxWidth: 560 }}>Defina quais itens aparecem no carrossel da primeira tela do portfólio.</p>
+          <p style={{ fontSize: '.84rem', color: 'var(--ink3)', marginBottom: 18, maxWidth: 560 }}>Defina quais produtos aparecem no carrossel da capa. Adicione, reordene e clique em <b>Salvar carrossel</b> para publicar.</p>
           <div className="slot-list">
-            {p.carousel.map((sl, i) => {
+            {draft.map((sl, i) => {
               const prod = p.products.find(x => x.id === sl.ref_id)
-              return <SlotItem key={i} sl={sl} thumb={prod?.images?.[0]} name={prod?.name ?? sl.ref_id}
-                onMoveUp={() => p.onSaveCarousel(slotMove(p.carousel, i, -1))}
-                onMoveDown={() => p.onSaveCarousel(slotMove(p.carousel, i, 1))}
-                onRemove={() => { const n = [...p.carousel]; n.splice(i, 1); p.onSaveCarousel(n) }} />
+              return <SlotItem key={sl.ref_id + i} sl={sl} thumb={prod?.images?.[0]} name={prod?.name ?? sl.ref_id}
+                onMoveUp={() => updateDraft(slotMove(draft, i, -1))}
+                onMoveDown={() => updateDraft(slotMove(draft, i, 1))}
+                onRemove={() => { const n = [...draft]; n.splice(i, 1); updateDraft(n) }} />
             })}
+            {draft.length === 0 && <p style={{ fontSize: '.84rem', color: 'var(--ink3)', padding: '12px 0' }}>Nenhum slide ainda. Adicione produtos abaixo.</p>}
           </div>
-          <button className="add-slot" onClick={() => p.onAddSlot('carousel')}>+ Adicionar slide ao carrossel</button>
+          <div style={{ display: 'flex', gap: 10, marginTop: 12, alignItems: 'center' }}>
+            <button className="add-slot" onClick={() => p.onAddSlot('carousel')}>+ Adicionar produto</button>
+            <button
+              className="btn-sm"
+              style={{ background: dirty ? 'var(--brand)' : 'var(--bg2)', color: dirty ? '#fff' : 'var(--ink3)', border: 'none', padding: '10px 20px', borderRadius: 100, fontWeight: 600, fontSize: '.84rem', cursor: dirty ? 'pointer' : 'default', transition: 'all .2s' }}
+              onClick={() => { if (dirty) { p.onSaveCarousel(draft); setDirty(false) } }}
+            >
+              {dirty ? '💾 Salvar carrossel' : '✓ Salvo'}
+            </button>
+          </div>
         </div>
       )}
       {p.colTab === 'especiais' && (
