@@ -44,7 +44,7 @@ export default async function Home() {
     <>
       <style dangerouslySetInnerHTML={{ __html: `:root{--olive:${app.brand};--olived:${app.brandL};--brandp:${app.brandP}}` }} />
       <HomeNav waUrl={waUrl} />
-      <HomeHero waUrl={waUrl} products={products} carousel={carousel} />
+      <HomeHero waUrl={waUrl} />
       <HomeStrip />
       <HomeSobre />
       <HomeColecoes products={products} categories={categories} especiais={especiais} />

@@ -15,18 +15,10 @@ function CarouselSlide({ prod, label }: { prod: Product; label?: string }) {
   )
 }
 
-export function HomeHero({ waUrl, products, carousel }: {
-  waUrl: string; products: Product[]; carousel: CarouselSlot[]
-}) {
-  const slides = carousel
-    .map(s => { const p = products.find(x => x.id === s.ref_id); return p ? { prod: p, label: s.label } : null })
-    .filter(Boolean) as { prod: Product; label: string }[]
-  const featured = products.filter(p => p.featured)
-  const fallback = (featured.length > 0 ? featured : products).slice(0, 4)
-
+export function HomeHero({ waUrl }: { waUrl: string }) {
   return (
     <header className="hero">
-      <div className="wrap hero-g">
+      <div className="wrap">
         <div className="rv">
           <img className="hero-logo" src="/images/logo-maricota.png" alt="Maricota" />
           <h1 className="htag">Maternidade dos sonhos,<span className="it">feita à mão.</span></h1>
@@ -38,17 +30,6 @@ export function HomeHero({ waUrl, products, carousel }: {
             </a>
             <a className="btn btng" href="#colecoes">Ver coleções</a>
           </div>
-        </div>
-        <div className="cwrap rv">
-          <div className="cframe" id="cframe">
-            <span className="ctag-c"><i />Coleção 2026</span>
-            <div className="ctrack" id="ctrack">
-              {slides.length > 0
-                ? slides.map((s, i) => <CarouselSlide key={i} prod={s.prod} label={s.label} />)
-                : fallback.map((p, i) => <CarouselSlide key={i} prod={p} />)}
-            </div>
-          </div>
-          <div className="cfoot"><div className="cdots" id="cdots" /><span className="chint">deslize</span></div>
         </div>
       </div>
     </header>
