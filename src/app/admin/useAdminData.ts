@@ -96,8 +96,16 @@ export function useAdminData() {
 
   const moveImg = (from: number, to: number) => setImgItems(prev => { const n = [...prev]; const [item] = n.splice(from, 1); n.splice(to, 0, item); return n })
 
-  const saveCarousel = async (next: Slot[]) => { setCarousel(next); await api('/api/carousel', { method: 'PUT', body: JSON.stringify(next) }); showToast('Carrossel salvo!') }
-  const saveEspeciais = async (next: Slot[]) => { setEspeciais(next); await api('/api/especiais', { method: 'PUT', body: JSON.stringify(next) }); showToast('Coleções salvas!') }
+  const saveCarousel = async (next: Slot[]) => {
+    setCarousel(next)
+    try { await api('/api/carousel', { method: 'PUT', body: JSON.stringify(next) }); showToast('Carrossel salvo!') }
+    catch (e: unknown) { showToast((e as Error).message || 'Erro ao salvar carrossel.', 'err') }
+  }
+  const saveEspeciais = async (next: Slot[]) => {
+    setEspeciais(next)
+    try { await api('/api/especiais', { method: 'PUT', body: JSON.stringify(next) }); showToast('Coleções salvas!') }
+    catch (e: unknown) { showToast((e as Error).message || 'Erro ao salvar coleções.', 'err') }
+  }
 
   const pickSlot = (type: string, ref_id: string, label: string) => {
     const entry = { type, ref_id, label }
