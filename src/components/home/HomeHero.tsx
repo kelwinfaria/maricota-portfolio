@@ -21,7 +21,8 @@ export function HomeHero({ waUrl, products, carousel }: {
   const slides = carousel
     .map(s => { const p = products.find(x => x.id === s.ref_id); return p ? { prod: p, label: s.label } : null })
     .filter(Boolean) as { prod: Product; label: string }[]
-  const fallback = products.filter(p => p.featured).slice(0, 4)
+  const featured = products.filter(p => p.featured)
+  const fallback = (featured.length > 0 ? featured : products).slice(0, 4)
 
   return (
     <header className="hero">

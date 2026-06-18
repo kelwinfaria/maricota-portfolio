@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase, supabaseAdmin } from '@/lib/supabase'
+import { supabaseAdmin } from '@/lib/supabase'
 import { isAuthenticated } from '@/lib/auth'
 import { badRequest, readJson, validateCategoryPayload } from '@/lib/api-validation'
 
 export async function GET() {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from('categories')
     .select('*')
     .order('position')
