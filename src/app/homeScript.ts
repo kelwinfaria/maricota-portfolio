@@ -17,15 +17,25 @@ document.querySelectorAll('.rv').forEach(el=>io.observe(el));
 requestAnimationFrame(()=>requestAnimationFrame(()=>{document.querySelectorAll('.rv:not(.vis)').forEach(el=>{if(el.getBoundingClientRect().top<window.innerHeight*.94)el.classList.add('vis')})}));
 const ctrack=document.getElementById('ctrack'),cdots=document.getElementById('cdots');
 if(ctrack&&cdots){
-  const cslides=[...ctrack.children];
-  let ci=0,ct=null;
-  const goC=(n)=>{ci=(n+cslides.length)%cslides.length;ctrack.style.transform='translateX(-'+ci*100+'%)';[...cdots.children].forEach((d,i)=>d.classList.toggle('on',i===ci))};
-  cslides.forEach((_,i)=>{const d=document.createElement('button');d.className='cdot'+(i===0?' on':'');d.setAttribute('aria-label','Slide '+(i+1));d.addEventListener('click',()=>{clearInterval(ct);goC(i);ct=setInterval(()=>goC(ci+1),4200)});cdots.appendChild(d)});
-  if(cslides.length>1)ct=setInterval(()=>goC(ci+1),4200);
+  const orig=[...ctrack.children];
+  const n=orig.length;
+  if(n>1){
+    ctrack.appendChild(orig[0].cloneNode(true));
+    ctrack.insertBefore(orig[n-1].cloneNode(true),orig[0]);
+  }
+  let ci=1,ct=null,snapping=false;
+  const jump=(idx)=>{snapping=true;ctrack.style.transition='none';ci=idx;ctrack.style.transform='translateX(-'+ci*100+'%)';void ctrack.offsetWidth;ctrack.style.transition='';snapping=false};
+  const sync=()=>{const di=((ci-1)%n+n)%n;[...cdots.children].forEach((d,i)=>d.classList.toggle('on',i===di))};
+  const goTo=(idx)=>{ci=idx;ctrack.style.transform='translateX(-'+ci*100+'%)';sync()};
+  const step=(dir)=>goTo(ci+dir);
+  for(let i=0;i<n;i++){const d=document.createElement('button');d.className='cdot'+(i===0?' on':'');d.setAttribute('aria-label','Slide '+(i+1));d.addEventListener('click',()=>{clearInterval(ct);goTo(i+1);ct=setInterval(()=>step(1),4200)});cdots.appendChild(d)}
+  jump(1);
+  ctrack.addEventListener('transitionend',e=>{if(snapping||e.propertyName!=='transform')return;if(ci<=0)jump(n);else if(ci>=n+1)jump(1)});
+  if(n>1)ct=setInterval(()=>step(1),4200);
   let tx=0,ty=0,locked=false;
   ctrack.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY;locked=false},{passive:true});
   ctrack.addEventListener('touchmove',e=>{if(locked)return;const dx=Math.abs(e.touches[0].clientX-tx),dy=Math.abs(e.touches[0].clientY-ty);if(dx>dy&&dx>8){locked=true;e.preventDefault()}},{passive:false});
-  ctrack.addEventListener('touchend',e=>{if(!locked)return;const dx=e.changedTouches[0].clientX-tx;clearInterval(ct);goC(ci+(dx<0?1:-1));ct=setInterval(()=>goC(ci+1),4200);locked=false},{passive:true});
+  ctrack.addEventListener('touchend',e=>{if(!locked)return;const dx=e.changedTouches[0].clientX-tx;clearInterval(ct);step(dx<0?1:-1);ct=setInterval(()=>step(1),4200);locked=false},{passive:true});
 }
 const cards=[...document.querySelectorAll('.card')];
 const goFilter=(f)=>{
