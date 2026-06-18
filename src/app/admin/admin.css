@@ -27,6 +27,11 @@ button,input,select,textarea{font-family:inherit;font-size:inherit}
 .lcard .field{margin-bottom:13px;text-align:left}
 .lcard label{display:block;font-size:.74rem;font-weight:600;letter-spacing:.04em;color:var(--ink2);margin-bottom:6px}
 .lcard input{width:100%;padding:12px 15px;border:1.5px solid var(--line);border-radius:11px;background:var(--bg);color:var(--ink);font-size:.94rem;outline:none;transition:border-color .25s,box-shadow .25s}
+.pw-wrap{position:relative;display:flex;align-items:center}
+.pw-wrap input{padding-right:46px}
+.pw-eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:34px;height:34px;border:none;background:none;cursor:pointer;display:grid;place-items:center;color:var(--ink3);border-radius:8px;transition:color .2s,background .2s}
+.pw-eye:hover{color:var(--brand);background:color-mix(in srgb,var(--brand) 10%,transparent)}
+.pw-eye svg{width:19px;height:19px}
 .lcard input:focus{border-color:var(--brand);box-shadow:0 0 0 3px color-mix(in srgb,var(--brand) 18%,transparent)}
 .lcard input.err{border-color:var(--red)}
 .lcard .err-msg{font-size:.76rem;color:var(--red);margin-top:4px;display:none}
