@@ -37,6 +37,7 @@ interface Props {
   carousel: Slot[]; especiais: Slot[]; products: Product[]; cats: Category[]
   onSaveCarousel: (s: Slot[]) => void; onSaveEspeciais: (s: Slot[]) => void
   onAddSlot: (m: 'carousel' | 'especial') => void
+  onSetEspecialCover: (index: number, file: File) => void; onRemoveEspecialCover: (index: number) => void
   newCat: string; setNewCat: (v: string) => void; onAddCat: () => void
   onRemoveCat: (id: string) => void; renamingCat: string | null; renameVal: string
   setRenamingCat: (id: string | null) => void; setRenameVal: (v: string) => void
@@ -87,15 +88,27 @@ export function CollectionsSection(p: Props) {
       )}
       {p.colTab === 'especiais' && (
         <div>
-          <p style={{ fontSize: '.84rem', color: 'var(--ink3)', marginBottom: 18, maxWidth: 560 }}>Escolha quais coleções aparecem na seção &quot;Nossas Coleções&quot; do portfólio.</p>
+          <p style={{ fontSize: '.84rem', color: 'var(--ink3)', marginBottom: 18, maxWidth: 560 }}>Escolha quais coleções aparecem na seção &quot;Nossas Coleções&quot; do portfólio. Defina uma <b>capa</b> própria para cada coleção — se não definir, usamos a foto do primeiro produto.</p>
           <div className="slot-list">
             {p.especiais.map((sl, i) => {
               const cat = p.cats.find(c => c.id === sl.ref_id)
               const prod = p.products.find(x => x.category === sl.ref_id || x.id === sl.ref_id)
-              return <SlotItem key={i} sl={sl} thumb={prod?.images?.[0]} name={cat?.label ?? prod?.name ?? sl.ref_id}
-                onMoveUp={() => p.onSaveEspeciais(slotMove(p.especiais, i, -1))}
-                onMoveDown={() => p.onSaveEspeciais(slotMove(p.especiais, i, 1))}
-                onRemove={() => { const n = [...p.especiais]; n.splice(i, 1); p.onSaveEspeciais(n) }} />
+              return (
+                <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <SlotItem sl={sl} thumb={sl.cover || prod?.images?.[0]} name={cat?.label ?? prod?.name ?? sl.ref_id}
+                    onMoveUp={() => p.onSaveEspeciais(slotMove(p.especiais, i, -1))}
+                    onMoveDown={() => p.onSaveEspeciais(slotMove(p.especiais, i, 1))}
+                    onRemove={() => { const n = [...p.especiais]; n.splice(i, 1); p.onSaveEspeciais(n) }} />
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center', paddingLeft: 28 }}>
+                    <label className="btn-sm" style={{ cursor: 'pointer', background: 'var(--bg2)', border: 'none', padding: '6px 14px', borderRadius: 100, fontSize: '.74rem', fontWeight: 600 }}>
+                      {sl.cover ? '🔄 Trocar capa' : '📷 Definir capa'}
+                      <input type="file" accept="image/*" style={{ display: 'none' }}
+                        onChange={e => { const f = e.target.files?.[0]; if (f) p.onSetEspecialCover(i, f); e.target.value = '' }} />
+                    </label>
+                    {sl.cover && <button className="btn-sm" style={{ background: 'transparent', border: 'none', color: 'var(--ink3)', fontSize: '.74rem', cursor: 'pointer' }} onClick={() => p.onRemoveEspecialCover(i)}>Remover capa (usar foto do produto)</button>}
+                  </div>
+                </div>
+              )
             })}
           </div>
           <button className="add-slot" onClick={() => p.onAddSlot('especial')}>+ Adicionar coleção</button>

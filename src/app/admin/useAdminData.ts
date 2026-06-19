@@ -61,8 +61,8 @@ export function useAdminData() {
     try {
       const uploadedUrls: string[] = []
       for (const item of imgItems) {
-        if (item.src.startsWith('http')) { uploadedUrls.push(item.src); continue }
         if (item.file) { const fd = new FormData(); fd.append('file', item.file); const r = await fetch('/api/upload', { method: 'POST', body: fd }); const j = await r.json(); if (!r.ok) throw new Error(j.error || 'Falha ao enviar imagem'); if (j.url) uploadedUrls.push(j.url) }
+        else if (item.src) { uploadedUrls.push(item.src) } // imagem já existente (URL http ou caminho relativo do seed) — preserva
       }
       const body = { ...form, images: uploadedUrls }
       if (modal.id) await api(`/api/products/${modal.id}`, { method: 'PUT', body: JSON.stringify(body) })
@@ -106,6 +106,16 @@ export function useAdminData() {
     try { await api('/api/especiais', { method: 'PUT', body: JSON.stringify(next) }); showToast('Coleções salvas!') }
     catch (e: unknown) { showToast((e as Error).message || 'Erro ao salvar coleções.', 'err') }
   }
+
+  const setEspecialCover = async (index: number, file: File) => {
+    try {
+      const fd = new FormData(); fd.append('file', file)
+      const r = await fetch('/api/upload', { method: 'POST', body: fd })
+      const j = await r.json(); if (!r.ok) throw new Error(j.error || 'Falha ao enviar imagem')
+      await saveEspeciais(especiais.map((s, i) => i === index ? { ...s, cover: j.url } : s))
+    } catch (e: unknown) { showToast((e as Error).message, 'err') }
+  }
+  const removeEspecialCover = (index: number) => saveEspeciais(especiais.map((s, i) => i === index ? { ...s, cover: undefined } : s))
 
   const pickSlot = (type: string, ref_id: string, label: string) => {
     const entry = { type, ref_id, label }
@@ -159,7 +169,7 @@ export function useAdminData() {
     trash, renamingCat, setRenamingCat, renameVal, setRenameVal, cfPermDel, setCfPermDel,
     sbRef, dragImgIdx,
     doLogin, doLogout, saveProd, delProd, restoreProduct, permDelete,
-    openModal, moveImg, saveCarousel, saveEspeciais, pickSlot,
+    openModal, moveImg, saveCarousel, saveEspeciais, pickSlot, setEspecialCover, removeEspecialCover,
     addCat, removeCat, renameCat, saveAppearance, saveWA, saveName, changePW, handleFiles,
   }
 }

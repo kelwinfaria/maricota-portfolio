@@ -1,6 +1,6 @@
 interface Product { id: string; name: string; category: string; images: string[] }
 interface Category { id: string; label: string }
-interface EspecialSlot { type: string; ref_id: string; label: string }
+interface EspecialSlot { type: string; ref_id: string; label: string; cover?: string }
 
 function ColecaoCard({ index, filterKey, label, sublabel, img }: {
   index: number; filterKey: string; label: string; sublabel: string; img: string
@@ -31,14 +31,15 @@ export function HomeColecoes({ products, categories, especiais }: {
         </div>
         <div className="cc-grid rv">
           {cards.map((slot, i) => {
+            const cover = (slot as EspecialSlot).cover
             if (slot.type === 'category') {
               const cat = categories.find(c => c.id === slot.ref_id)
               const prod = products.find(p => p.category === slot.ref_id)
-              return <ColecaoCard key={i} index={i} filterKey={slot.ref_id} label={cat?.label ?? slot.ref_id} sublabel={(slot as EspecialSlot).label ?? 'Coleção 2026'} img={prod?.images?.[0] ?? ''} />
+              return <ColecaoCard key={i} index={i} filterKey={slot.ref_id} label={cat?.label ?? slot.ref_id} sublabel={(slot as EspecialSlot).label ?? 'Coleção 2026'} img={cover || prod?.images?.[0] || ''} />
             }
             const prod = products.find(p => p.id === slot.ref_id)
             if (!prod) return null
-            return <ColecaoCard key={i} index={i} filterKey={prod.category} label={prod.name} sublabel={(slot as EspecialSlot).label ?? 'Destaque'} img={prod.images?.[0] ?? ''} />
+            return <ColecaoCard key={i} index={i} filterKey={prod.category} label={prod.name} sublabel={(slot as EspecialSlot).label ?? 'Destaque'} img={cover || prod.images?.[0] || ''} />
           })}
         </div>
       </div>

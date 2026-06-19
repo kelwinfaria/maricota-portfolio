@@ -15,6 +15,7 @@ type SlotPayload = {
   type: 'product' | 'category'
   ref_id: string
   label: string | null
+  cover: string | null
 }
 
 const HEX_COLOR = /^#[0-9a-fA-F]{6}$/
@@ -55,6 +56,13 @@ function safeUrl(value: string) {
   }
 }
 
+// Aceita URL absoluta http(s) OU caminho relativo do site (ex.: images/img09.jpg),
+// usado pelos produtos do seed que apontam para arquivos em /public.
+function isImageRef(value: string) {
+  if (safeUrl(value)) return true
+  return /^\/?[\w.\-/]+\.(jpe?g|png|webp|gif|avif)$/i.test(value)
+}
+
 export function validateProductPayload(body: unknown): ProductPayload | string {
   if (!body || typeof body !== 'object' || Array.isArray(body)) return 'Payload invalido.'
   const input = body as Record<string, unknown>
@@ -70,7 +78,7 @@ export function validateProductPayload(body: unknown): ProductPayload | string {
 
   if (!Array.isArray(input.images)) return 'Imagens invalidas.'
   const images = input.images.filter((item): item is string => typeof item === 'string').map(item => item.trim())
-  if (images.length !== input.images.length || images.length > 12 || images.some(item => item.length > 500 || !safeUrl(item))) {
+  if (images.length !== input.images.length || images.length > 12 || images.some(item => item.length > 500 || !isImageRef(item))) {
     return 'Imagens invalidas.'
   }
 
@@ -122,9 +130,10 @@ export function validateSlotsPayload(body: unknown): SlotPayload[] | string {
     const input = item as Record<string, unknown>
     const type = input.type === 'category' ? 'category' : input.type === 'product' ? 'product' : null
     const refId = stringValue(input.ref_id, 120, true)
-    const label = optionalString(input.label, 120)
+    const cover = optionalString(input.cover, 500)
     if (!type || refId === null) return null
-    return { type, ref_id: refId, label }
+    if (cover !== null && !isImageRef(cover)) return null
+    return { type, ref_id: refId, label: optionalString(input.label, 120), cover }
   }).every(Boolean)
     ? body.map((item) => {
         const input = item as Record<string, unknown>
@@ -132,6 +141,7 @@ export function validateSlotsPayload(body: unknown): SlotPayload[] | string {
           type: input.type as 'product' | 'category',
           ref_id: String(input.ref_id).trim(),
           label: optionalString(input.label, 120),
+          cover: optionalString(input.cover, 500),
         }
       })
     : 'Item invalido.'

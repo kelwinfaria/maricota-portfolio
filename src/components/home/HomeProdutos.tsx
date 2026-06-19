@@ -4,6 +4,21 @@ interface Product {
 }
 interface Category { id: string; label: string }
 
+// Extrai o valor numérico de preços em texto livre ("R$ 179,90", "299,90", "Cor à escolha").
+// Preços sem número (ex.: "Cor à escolha") vão para o fim da lista.
+function parsePrice(price?: string): number {
+  const n = parseFloat(String(price ?? '').replace(/[^\d,.]/g, '').replace(/\.(?=\d{3}\b)/g, '').replace(',', '.'))
+  return Number.isNaN(n) ? -1 : n
+}
+
+// Adiciona "R$ " automaticamente quando o preço é numérico e o cliente não digitou.
+// Mantém intacto textos sem número ("Cor à escolha") ou que já têm R$.
+function formatPrice(price?: string): string {
+  const s = String(price ?? '').trim()
+  if (!s || /r\$/i.test(s) || !/\d/.test(s)) return s
+  return `R$ ${s}`
+}
+
 function ProductCard({ p, cats }: { p: Product; cats: Category[] }) {
   const cat = cats.find(c => c.id === p.category)
   const catLabel = cat?.label ?? p.category
@@ -13,7 +28,7 @@ function ProductCard({ p, cats }: { p: Product; cats: Category[] }) {
       className={`card${p.featured ? ' feat' : ''}`}
       data-category={p.category}
       data-det={p.det ?? ''}
-      data-price={p.price ?? ''}
+      data-price={formatPrice(p.price)}
       data-cat-label={catLabel}
       data-images={imgs.join('|')}
       data-wa={p.wa ?? ''}
@@ -28,7 +43,7 @@ function ProductCard({ p, cats }: { p: Product; cats: Category[] }) {
         <h3 className="card-name">{p.name}</h3>
         <p className="card-det">{p.det ?? ''}</p>
         <div className="card-ft">
-          <span className="card-price">{p.price ?? ''}</span>
+          <span className="card-price">{formatPrice(p.price)}</span>
           <span className="card-more">{imgs.length > 1 ? `${imgs.length} fotos →` : 'ampliar →'}</span>
         </div>
       </div>
@@ -37,6 +52,8 @@ function ProductCard({ p, cats }: { p: Product; cats: Category[] }) {
 }
 
 export function HomeProdutos({ products, categories }: { products: Product[]; categories: Category[] }) {
+  // Ordena do maior para o menor preço, independente da categoria.
+  const sorted = [...products].sort((a, b) => parsePrice(b.price) - parsePrice(a.price))
   return (
     <section className="produtos" id="produtos">
       <div className="wrap">
@@ -52,7 +69,7 @@ export function HomeProdutos({ products, categories }: { products: Product[]; ca
           ))}
         </div>
         <div className="grid" id="grid">
-          {products.map(p => <ProductCard key={p.id} p={p} cats={categories} />)}
+          {sorted.map(p => <ProductCard key={p.id} p={p} cats={categories} />)}
         </div>
         <p className="cnote rv">As <b>roupinhas</b> têm troca de cor sob encomenda. Cada <b>porta maternidade</b> é personalizada com o nome e o bichinho do bebê.</p>
       </div>
