@@ -1,11 +1,13 @@
 import { PCard } from './PCard'
 import type { Product, Category } from './types'
+import { byPriceAsc } from '@/lib/price'
 
 export function ProductsSection({ products, cats, activeFilter, setActiveFilter, onEdit, onDel }: {
   products: Product[]; cats: Category[]; activeFilter: string
   setActiveFilter: (f: string) => void; onEdit: (id: string) => void; onDel: (id: string) => void
 }) {
-  const filtered = activeFilter === 'todos' ? products : products.filter(p => p.category === activeFilter)
+  const filtered = (activeFilter === 'todos' ? products : products.filter(p => p.category === activeFilter))
+    .slice().sort((a, b) => byPriceAsc(a.price, b.price)) // menor -> maior preço
   const filters = [
     { id: 'todos', label: 'Todos', count: products.length },
     ...cats.map(c => ({ id: c.id, label: c.label, count: products.filter(p => p.category === c.id).length })),

@@ -2,22 +2,9 @@ interface Product {
   id: string; name: string; category: string; det?: string; price?: string
   featured: boolean; images: string[]; wa?: string
 }
+import { formatPrice, byPriceDesc } from '@/lib/price'
+
 interface Category { id: string; label: string }
-
-// Extrai o valor numérico de preços em texto livre ("R$ 179,90", "299,90", "Cor à escolha").
-// Preços sem número (ex.: "Cor à escolha") vão para o fim da lista.
-function parsePrice(price?: string): number {
-  const n = parseFloat(String(price ?? '').replace(/[^\d,.]/g, '').replace(/\.(?=\d{3}\b)/g, '').replace(',', '.'))
-  return Number.isNaN(n) ? -1 : n
-}
-
-// Adiciona "R$ " automaticamente quando o preço é numérico e o cliente não digitou.
-// Mantém intacto textos sem número ("Cor à escolha") ou que já têm R$.
-function formatPrice(price?: string): string {
-  const s = String(price ?? '').trim()
-  if (!s || /r\$/i.test(s) || !/\d/.test(s)) return s
-  return `R$ ${s}`
-}
 
 function ProductCard({ p, cats }: { p: Product; cats: Category[] }) {
   const cat = cats.find(c => c.id === p.category)
@@ -53,7 +40,7 @@ function ProductCard({ p, cats }: { p: Product; cats: Category[] }) {
 
 export function HomeProdutos({ products, categories }: { products: Product[]; categories: Category[] }) {
   // Ordena do maior para o menor preço, independente da categoria.
-  const sorted = [...products].sort((a, b) => parsePrice(b.price) - parsePrice(a.price))
+  const sorted = [...products].sort((a, b) => byPriceDesc(a.price, b.price))
   return (
     <section className="produtos" id="produtos">
       <div className="wrap">

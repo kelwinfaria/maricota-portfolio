@@ -1,4 +1,5 @@
 import type { Product, Category } from './types'
+import { formatPrice } from '@/lib/price'
 
 export function PCard({ p, cats, onEdit, onDel }: {
   p: Product; cats: Category[]; onEdit: () => void; onDel: () => void
@@ -22,7 +23,7 @@ export function PCard({ p, cats, onEdit, onDel }: {
       <div className="pcbody">
         <div className="pcn">{p.name}</div>
         <div className="pcd">{p.det}</div>
-        <div className="pcft"><span className="pcp">{p.price}</span><span className="pcf">{p.fabric}</span></div>
+        <div className="pcft"><span className="pcp">{formatPrice(p.price)}</span><span className="pcf">{p.fabric}</span></div>
       </div>
     </div>
   )
